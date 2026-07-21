@@ -1,0 +1,10 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+"scripts": {
+"dev": "tsx watch src/index.ts",
+"build": "tsc",
+"start": "node dist/index.js"
+}
