@@ -3,8 +3,309 @@
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
-"scripts": {
-"dev": "tsx watch src/index.ts",
-"build": "tsc",
-"start": "node dist/index.js"
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider     = "mysql"
+  relationMode = "prisma"
+}
+
+// ==========================================
+// Enums
+// ==========================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum MemberRole {
+  OWNER
+  MANAGER
+  MEMBER
+}
+
+enum MemberStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum EquipmentType {
+  INDIVIDUAL
+  CONSUMABLE
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  BORROWED
+  LOST
+  BROKEN
+  DISPOSED
+}
+
+enum RentalStatus {
+  REQUESTED
+  REJECTED
+  BORROWED
+  RETURNED
+  CANCELLED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum ReportType {
+  LOST
+  BROKEN
+  SHORTAGE
+  EXCESS
+  ETC
+}
+
+enum ReportStatus {
+  PENDING
+  COMPLETED
+}
+
+// ==========================================
+// Models
+// ==========================================
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(100)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  name         String   @db.VarChar(50)
+  role         UserRole @default(USER)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  createdOrganizations Organization[] @relation("OrganizationCreatedBy")
+  member               Member?
+
+  @@map("users")
+}
+
+model Organization {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  description String? @db.Text
+  logoUrl     String? @map("logo_url") @db.VarChar(255)
+  inviteCode  String  @unique @map("invite_code") @db.VarChar(20)
+
+  createdBy Int  @unique @map("created_by")
+  creator   User @relation("OrganizationCreatedBy", fields: [createdBy], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  departments Department[]
+  members     Member[]
+  equipments  Equipment[]
+
+  @@map("organizations")
+}
+
+model Department {
+  id             Int     @id @default(autoincrement())
+  organizationId Int     @map("organization_id")
+  name           String  @db.VarChar(50)
+  description    String? @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id])
+  members      Member[]
+  equipments   Equipment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("departments")
+}
+
+model Member {
+  id             Int          @id @default(autoincrement())
+  organizationId Int          @map("organization_id")
+  userId         Int          @unique @map("user_id")
+  departmentId   Int?         @map("department_id")
+  role           MemberRole   @default(MEMBER)
+  status         MemberStatus @default(PENDING)
+
+  approvedBy     Int?      @map("approved_by")
+  approvedAt     DateTime? @map("approved_at")
+  rejectedReason String?   @map("rejected_reason") @db.VarChar(255)
+  joinedAt       DateTime? @map("joined_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  approver     Member?      @relation("MemberApprovedBy", fields: [approvedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  approvedMembers Member[] @relation("MemberApprovedBy")
+
+  createdEquipments      Equipment[]             @relation("EquipmentCreatedBy")
+  approvedRentals        Rental[]                @relation("RentalApprovedBy")
+  rentals                Rental[]                @relation("RentalMember")
+  requestedStock         EquipmentStockRequest[] @relation("StockRequester")
+  processedStockRequests EquipmentStockRequest[] @relation("StockProcessedBy")
+  reports                Report[]                @relation("ReportReporter")
+  processedReports       Report[]                @relation("ReportProcessedBy")
+
+  @@index([organizationId])
+  @@index([departmentId])
+  @@index([approvedBy])
+  @@map("members")
+}
+
+model Equipment {
+  id                Int             @id @default(autoincrement())
+  organizationId    Int             @map("organization_id")
+  departmentId      Int?            @map("department_id")
+  name              String          @db.VarChar(100)
+  category          String?         @db.VarChar(50)
+  description       String?         @db.Text
+  imageUrl          String?         @map("image_url") @db.VarChar(255)
+  type              EquipmentType
+  totalQuantity     Int             @default(0) @map("total_quantity")
+  availableQuantity Int             @default(0) @map("available_quantity")
+  status            EquipmentStatus @default(AVAILABLE)
+  createdBy         Int             @map("created_by")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  creator      Member       @relation("EquipmentCreatedBy", fields: [createdBy], references: [id])
+
+  units         EquipmentUnit[]
+  rentals       Rental[]
+  stockRequests EquipmentStockRequest[]
+  reports       Report[]
+
+  @@index([organizationId])
+  @@index([departmentId])
+  @@index([createdBy])
+  @@map("equipments")
+}
+
+model EquipmentUnit {
+  id          Int             @id @default(autoincrement())
+  equipmentId Int             @map("equipment_id")
+  assetNumber String          @unique @map("asset_number") @db.VarChar(50)
+  status      EquipmentStatus @default(AVAILABLE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  rentals   Rental[]
+
+  @@index([equipmentId])
+  @@map("equipment_units")
+}
+
+model Rental {
+  id              Int          @id @default(autoincrement())
+  equipmentId     Int          @map("equipment_id")
+  equipmentUnitId Int?         @map("equipment_unit_id")
+  memberId        Int          @map("member_id")
+  quantity        Int          @default(1)
+  reason          String?      @db.VarChar(255)
+  status          RentalStatus @default(REQUESTED)
+
+  requestedAt    DateTime  @default(now()) @map("requested_at")
+  approvedBy     Int?      @map("approved_by")
+  approvedAt     DateTime? @map("approved_at")
+  rejectedReason String?   @map("rejected_reason") @db.VarChar(255)
+  dueAt          DateTime? @map("due_at")
+  returnedAt     DateTime? @map("returned_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  equipment     Equipment      @relation(fields: [equipmentId], references: [id])
+  equipmentUnit EquipmentUnit? @relation(fields: [equipmentUnitId], references: [id])
+  member        Member         @relation("RentalMember", fields: [memberId], references: [id])
+  approver      Member?        @relation("RentalApprovedBy", fields: [approvedBy], references: [id])
+
+  @@index([equipmentId])
+  @@index([equipmentUnitId])
+  @@index([memberId])
+  @@index([approvedBy])
+  @@map("rentals")
+}
+
+model EquipmentStockRequest {
+  id          Int           @id @default(autoincrement())
+  equipmentId Int           @map("equipment_id")
+  requesterId Int           @map("requester_id")
+  quantity    Int
+  reason      String?       @db.Text
+  status      RequestStatus @default(PENDING)
+
+  processedBy    Int?      @map("processed_by")
+  processedAt    DateTime? @map("processed_at")
+  rejectedReason String?   @map("rejected_reason") @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  requester Member    @relation("StockRequester", fields: [requesterId], references: [id])
+  processor Member?   @relation("StockProcessedBy", fields: [processedBy], references: [id])
+
+  @@index([equipmentId])
+  @@index([requesterId])
+  @@index([processedBy])
+  @@map("equipment_stock_requests")
+}
+
+model Report {
+  id          Int          @id @default(autoincrement())
+  equipmentId Int?         @map("equipment_id")
+  reporterId  Int          @map("reporter_id")
+  type        ReportType
+  status      ReportStatus @default(PENDING)
+  title       String       @db.VarChar(100)
+  content     String       @db.Text
+
+  processedBy Int?      @map("processed_by")
+  processedAt DateTime? @map("processed_at")
+  result      String?   @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  equipment Equipment? @relation(fields: [equipmentId], references: [id])
+  reporter  Member     @relation("ReportReporter", fields: [reporterId], references: [id])
+  processor Member?    @relation("ReportProcessedBy", fields: [processedBy], references: [id])
+
+  @@index([equipmentId])
+  @@index([reporterId])
+  @@index([processedBy])
+  @@map("reports")
 }
