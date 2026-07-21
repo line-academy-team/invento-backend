@@ -87,9 +87,8 @@ model User {
   name         String   @db.VarChar(50)
   role         UserRole @default(USER)
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") // 소프트 삭제 추가
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   // Relations
   createdOrganizations Organization[] @relation("OrganizationCreatedBy")
@@ -108,9 +107,8 @@ model Organization {
   createdBy Int  @unique @map("created_by")
   creator   User @relation("OrganizationCreatedBy", fields: [createdBy], references: [id])
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") // 소프트 삭제 추가
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   // Relations
   departments Department[]
@@ -126,9 +124,8 @@ model Department {
   name           String  @db.VarChar(50)
   description    String? @db.Text
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") // 소프트 삭제 추가
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -153,9 +150,8 @@ model Member {
   rejectedReason String?   @map("rejected_reason") @db.VarChar(255)
   joinedAt       DateTime? @map("joined_at")
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") // 소프트 삭제 추가
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -193,9 +189,8 @@ model Equipment {
   status            EquipmentStatus @default(AVAILABLE)
   createdBy         Int             @map("created_by")
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") // 실수 등록 삭제용
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -219,9 +214,8 @@ model EquipmentUnit {
   assetNumber String          @unique @map("asset_number") @db.VarChar(50)
   status      EquipmentStatus @default(AVAILABLE)
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at") // 실수 등록 삭제용
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   // Relations
   equipment Equipment @relation(fields: [equipmentId], references: [id])
