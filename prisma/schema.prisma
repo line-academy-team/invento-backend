@@ -87,8 +87,9 @@ model User {
   name         String   @db.VarChar(50)
   role         UserRole @default(USER)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
 
   // Relations
   createdOrganizations Organization[] @relation("OrganizationCreatedBy")
@@ -107,8 +108,9 @@ model Organization {
   createdBy Int  @unique @map("created_by")
   creator   User @relation("OrganizationCreatedBy", fields: [createdBy], references: [id])
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime?
 
   // Relations
   departments Department[]
@@ -125,7 +127,7 @@ model Department {
   description    String? @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -151,7 +153,7 @@ model Member {
   joinedAt       DateTime? @map("joined_at")
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -190,7 +192,7 @@ model Equipment {
   createdBy         Int             @map("created_by")
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -215,7 +217,7 @@ model EquipmentUnit {
   status      EquipmentStatus @default(AVAILABLE)
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   equipment Equipment @relation(fields: [equipmentId], references: [id])
@@ -242,7 +244,7 @@ model Rental {
   returnedAt     DateTime? @map("returned_at")
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   equipment     Equipment      @relation(fields: [equipmentId], references: [id])
@@ -270,7 +272,7 @@ model EquipmentStockRequest {
   rejectedReason String?   @map("rejected_reason") @db.VarChar(255)
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   equipment Equipment @relation(fields: [equipmentId], references: [id])
@@ -297,7 +299,7 @@ model Report {
   result      String?   @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   equipment Equipment? @relation(fields: [equipmentId], references: [id])
