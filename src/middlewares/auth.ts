@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import * as core from "express-serve-static-core";
-import userService from "../service/userService.js";
+import userService from "../services/userService.js";
 import { type User, UserRole } from "../generated/prisma/client.js";
 import jwtUtil from "../utils/jwt/jwtUtil.js";
 import type { NextFunction, Request, Response } from "express";

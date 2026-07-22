@@ -1,11 +1,14 @@
-import type { ZodType } from "zod";
-import type { Request, Response, NextFunction } from "express";
+import { ZodType } from "zod";
+import type { NextFunction, Request, Response } from "express";
 
 export const validate = (schema: ZodType) => {
     return async (req: Request, res: Response, next: NextFunction) => {
+        if (req.method === "GET" || req.method === "DELETE") {
+            return next();
+        }
         const result = await schema.safeParseAsync(req.body);
-
         if (!result.success) {
+            console.log(result.error.issues);
             const errorMessage = result.error.issues.map(issue => ({
                 field: issue.path.join("."),
                 message: issue.message,

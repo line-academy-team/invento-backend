@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import type { AuthRequest } from "../middleware/auth.js";
+import type { AuthRequest } from "../middlewares/auth.js";
 import type { UserSignupInputType } from "../schemas/user/userSignupSchema.js";
 import passwordUtil from "../utils/password/passwordUtil.js";
-import userService from "../service/userService.js";
+import userService from "../services/userService.js";
 import type { LoginInputType } from "../schemas/user/loginSchema.js";
 import type { UpdateUserInputType } from "../schemas/user/updateUserSchema.js";
 import type { UpdatePasswordInputType } from "../schemas/user/updatePasswordSchema.js";
