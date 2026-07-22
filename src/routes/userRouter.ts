@@ -1,12 +1,12 @@
 import { Router } from "express";
-import userController from "../controllers/userController.js";
-import { userSignupSchema } from "../schemas/user/userSignupSchema.js";
-import { loginSchema } from "../schemas/user/loginSchema.js";
-import { updateUserSchema } from "../schemas/user/updateUserSchema.js";
-import { withdrawUserSchema } from "../schemas/user/withdrawUserSchema.js";
-import { updatePasswordSchema } from "../schemas/user/updatePasswordSchema.js";
-import { authenticate } from "../middlewares/auth.js";
-import { validate } from "../middlewares/validate.js";
+import userController from "../controller/userController.ts";
+import { userSignupSchema } from "../schemas/user/userSignupSchema.ts";
+import { loginSchema } from "../schemas/user/loginSchema.ts";
+import { updateUserSchema } from "../schemas/user/updateUserSchema.ts";
+import { withdrawUserSchema } from "../schemas/user/withdrawUserSchema.ts";
+import { updatePasswordSchema } from "../schemas/user/updatePasswordSchema.ts";
+import { authenticate } from "../middleware/auth.ts";
+import { validate } from "../middleware/validate.ts";
 
 const router = Router();
 

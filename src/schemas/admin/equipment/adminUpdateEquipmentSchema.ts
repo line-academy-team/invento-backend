@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { EquipmentStatus } from "../../../generated/prisma/enums.js";
+import { EquipmentStatus } from "../../../generated/prisma/enums.ts";
 
 export const adminUpdateEquipmentSchema = z.object({
     name: z.string().min(1).max(100).optional(),

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MemberRole, MemberStatus } from "../../../generated/prisma/enums.js";
+import { MemberRole, MemberStatus } from "../../../generated/prisma/enums.ts";
 
 export const adminCreateMemberSchema = z.object({
     organizationId: z.number().int("조직 ID를 입력해주세요."),

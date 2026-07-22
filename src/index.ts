@@ -1,8 +1,9 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import userRouter from "./routes/userRouter.js";
-import organizationRouter from "./routes/organizationRouter.js";
+import userRouter from "./routes/userRouter.ts";
+import adminRouter from "./routes/admin/adminRouter.ts";
+import organizationRouter from "./routes/organizationRouter.ts";
 
 dotenv.config();
 
@@ -18,5 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/user", userRouter);
 app.use("/organization", organizationRouter);
+
+app.use("/admin", adminRouter);
 
 app.listen(PORT, () => console.log(`${PORT}번 포트에서 서버 실행.`));

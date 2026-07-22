@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MemberRole, MemberStatus } from "../../../generated/prisma/enums.js";
+import { MemberRole, MemberStatus } from "../../../generated/prisma/enums.ts";
 
 export const adminUpdateMemberSchema = z.object({
     departmentId: z.number().int().nullable().optional(),

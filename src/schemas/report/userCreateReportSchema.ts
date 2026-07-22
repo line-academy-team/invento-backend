@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReportType } from "../../generated/prisma/enums.js";
+import { ReportType } from "../../generated/prisma/enums.ts";
 
 export const userCreateReportSchema = z.object({
     equipmentId: z.number().int().optional(),

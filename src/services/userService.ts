@@ -1,9 +1,9 @@
-import prisma from "../config/prisma.js";
-import { Prisma } from "../generated/prisma/client.js";
-import type { LoginInputType } from "../schemas/user/loginSchema.js";
-import passwordUtil from "../utils/password/passwordUtil.js";
-import jwtUtil from "../utils/jwt/jwtUtil.js";
-import type { UpdateUserInputType } from "../schemas/user/updateUserSchema.js";
+import prisma from "../config/prisma.ts";
+import { Prisma } from "../generated/prisma/client.ts";
+import type { LoginInputType } from "../schemas/user/loginSchema.ts";
+import passwordUtil from "../utils/password/passwordUtil.ts";
+import jwtUtil from "../utils/jwt/jwtUtil.ts";
+import type { UpdateUserInputType } from "../schemas/user/updateUserSchema.ts";
 
 // 회원가입 로직
 
