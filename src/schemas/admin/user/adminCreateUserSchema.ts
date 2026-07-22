@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserRole } from "../../../generated/prisma/enums.js";
+import { UserRole } from "../../../generated/prisma/enums.ts";
 
 export const adminCreateUserSchema = z.object({
     email: z.string().email("유효한 이메일 주소를 입력해주세요.").max(100),

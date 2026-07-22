@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RentalStatus } from "../../../generated/prisma/enums.js";
+import { RentalStatus } from "../../../generated/prisma/enums.ts";
 
 export const adminCreateRentalSchema = z.object({
     equipmentId: z.number().int("장비 ID를 입력해주세요."),
