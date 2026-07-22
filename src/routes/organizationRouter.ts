@@ -1,13 +1,16 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.js";
-import { userCreateOrganizationSchema } from "../schemas/organization/userCreateOrganizationSchema.js";
+import { userOrganizationSchema } from "../schemas/organization/userOrganizationSchema.js";
 import organizationController from "../controllers/organizationController.js";
+import { authenticate } from "../middlewares/auth.js";
 
 const router = Router();
 
+router.get("/:id", authenticate, organizationController.getOrganizationById);
 router.post(
     "/create",
-    validate(userCreateOrganizationSchema),
+    authenticate,
+    validate(userOrganizationSchema),
     organizationController.createOrganization,
 );
 
