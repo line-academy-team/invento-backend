@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RequestStatus } from "../../../generated/prisma/enums.js";
+import { RequestStatus } from "../../../generated/prisma/enums.ts";
 
 export const adminProcessStockRequestSchema = z.object({
     status: z.enum(Object.values(RequestStatus) as [string, ...string[]]),

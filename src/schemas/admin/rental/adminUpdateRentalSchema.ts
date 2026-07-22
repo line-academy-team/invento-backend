@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RentalStatus } from "../../../generated/prisma/enums.js";
+import { RentalStatus } from "../../../generated/prisma/enums.ts";
 
 export const adminUpdateRentalSchema = z.object({
     status: z.enum(Object.values(RentalStatus) as [string, ...string[]]),
