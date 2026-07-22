@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import organizationRouter from "./routes/organizationRouter.js";
 
 dotenv.config();
 
@@ -13,5 +14,7 @@ app.use(cors({ origin: ["http://localhost:8081"], credentials: true }));
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/organization", organizationRouter);
 
 app.listen(PORT, () => console.log(`${PORT}번 포트에서 서버 실행.`));
