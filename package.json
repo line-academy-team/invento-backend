@@ -6,9 +6,7 @@
     "scripts": {
         "dev": "tsx watch src/index.ts",
         "prisma:migrate": "prisma migrate dev",
-        "prisma:generate": "prisma generate",
-        "seed:admin": "tsx seed/createAdmin.ts",
-        "seed:parking": "tsx seed/createParking.ts"
+        "prisma:generate": "prisma generate"
     },
     "keywords": [],
     "author": "",
