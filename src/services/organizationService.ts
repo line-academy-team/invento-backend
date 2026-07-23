@@ -36,10 +36,29 @@ const createOrganization = async (data: OrganizationCreateInput) => {
     });
 };
 
-const updateOrganization = async (ozId: number, input: OrganizationUpdateInput) => {};
+const updateOrganization = async (ozId: number, data: OrganizationUpdateInput) => {
+    return prisma.organization.update({
+        where: {
+            id: ozId,
+        },
+        data,
+    });
+};
+
+const deleteOrganization = async (ozId: number) => {
+    return prisma.organization.update({
+        where: {
+            id: ozId,
+        },
+        data: {
+            deletedAt: new Date(),
+        },
+    });
+};
 
 export default {
     createOrganization,
     getOrganizationById,
     updateOrganization,
+    deleteOrganization,
 };

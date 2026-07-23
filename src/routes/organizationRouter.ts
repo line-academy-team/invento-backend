@@ -13,5 +13,12 @@ router.post(
     validate(userOrganizationSchema),
     organizationController.createOrganization,
 );
+router.patch(
+    "/:id",
+    authenticate,
+    validate(userOrganizationSchema),
+    organizationController.updateOrganization,
+);
+router.patch("/:id/delete", authenticate, organizationController.deleteOrganization);
 
 export default router;
