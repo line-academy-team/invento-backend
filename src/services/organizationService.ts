@@ -1,8 +1,7 @@
 import prisma from "../config/prisma.js";
-import type {
-    OrganizationCreateInput,
-    OrganizationUpdateInput,
-} from "../generated/prisma/models/Organization.js";
+import type { OrganizationUpdateInput } from "../generated/prisma/models/Organization.js";
+import { MemberRole, MemberStatus } from "../generated/prisma/enums.js";
+import type { UserOrganizationInputType } from "../schemas/organization/userOrganizationSchema.js";
 
 const getOrganizationById = async (ozId: number) => {
     const organization = await prisma.organization.findUnique({
@@ -19,20 +18,38 @@ const getOrganizationById = async (ozId: number) => {
                 },
             },
             members: true,
-            equipment: true,
+            equipments: true,
         },
     });
 
-    if (!organization || organization.deletedAt) {
-        throw new Error("ORGANIZATION_NOT_FOUND");
-    }
-
+    if (!organization) throw new Error("ORGANIZATION_NOT_FOUND");
     return organization;
 };
 
-const createOrganization = async (data: OrganizationCreateInput) => {
+const createOrganization = async (userId: number, data: UserOrganizationInputType) => {
     return prisma.organization.create({
-        data,
+        data: {
+            name: data.name,
+            description: data.description ?? null,
+            logoUrl: data.logoUrl ?? null,
+            inviteCode: data.inviteCode,
+            creator: {
+                connect: {
+                    id: userId,
+                },
+            },
+            members: {
+                create: {
+                    userId: userId,
+                    role: MemberRole.OWNER,
+                    status: MemberStatus.APPROVED,
+                    joinedAt: new Date(),
+                },
+            },
+        },
+        include: {
+            members: true,
+        },
     });
 };
 
