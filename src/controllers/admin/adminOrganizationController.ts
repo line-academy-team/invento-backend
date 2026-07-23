@@ -7,7 +7,7 @@ const updateOrganization = async (req: Request, res: Response) => {
         const id = Number(req.params.id);
 
         if (isNaN(id)) {
-            res.status(400).send("아이디가 올바르지 않습니다.");
+            res.status(400).json("아이디가 올바르지 않습니다.");
             return;
         }
 

@@ -50,9 +50,15 @@ const getUserById = async (req: Request, res: Response) => {
 
 const updateUser = async (req: Request, res: Response) => {
     try {
-        const userId = parseInt(req.params.id as string, 10);
+        const id = Number(req.params.id);
+
+        if (isNaN(id)) {
+            res.status(400).json("아이디가 올바르지 않습니다.");
+            return;
+        }
+
         const input: AdminUpdateUserInputType = req.body;
-        const updateUser = await adminUserService.updateUser(userId, input);
+        const updateUser = await adminUserService.updateUser(id, input);
         res.status(200).json({
             message: "사용자 정보가 성공적으로 수정되었습니다",
             data: updateUser,
