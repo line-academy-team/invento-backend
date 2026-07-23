@@ -14,7 +14,7 @@ router.post(
     organizationController.createOrganization,
 );
 router.patch(
-    "/:id",
+    "/:id/update",
     authenticate,
     validate(userOrganizationSchema),
     organizationController.updateOrganization,
