@@ -5,7 +5,7 @@ import type { OrganizationUpdateInput } from "../generated/prisma/models/Organiz
 import type { AuthRequest } from "../middlewares/auth.js";
 import type { UserJoinOrganizationInputType } from "../schemas/organization/userJoinOrganizationSchema.js";
 
-const validateOwnerAndOrg = async (req: AuthRequest<{ id: string }>, res: Response) => {
+export const validateOwnerAndOrg = async (req: AuthRequest<{ id: string }>, res: Response) => {
     if (!req.user) {
         res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
         return null;
