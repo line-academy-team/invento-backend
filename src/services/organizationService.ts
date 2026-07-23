@@ -17,19 +17,31 @@ const getOrganizationById = async (ozId: number, userId: number) => {
                     description: true,
                 },
             },
-            members: true,
+            members: {
+                where: {
+                    status: {
+                        in: ["PENDING", "APPROVED"],
+                    },
+                },
+                select: {
+                    id: true,
+                    userId: true,
+                    role: true,
+                    user: {
+                        select: {
+                            name: true,
+                            email: true,
+                        },
+                    },
+                },
+            },
             equipments: true,
         },
     });
 
     if (!organization) throw new Error("ORGANIZATION_NOT_FOUND");
 
-    const isMember = organization.members.some(
-        member =>
-            member.userId === userId &&
-            member.status !== MemberStatus.WITHDRAWN &&
-            member.status !== MemberStatus.REJECTED,
-    );
+    const isMember = organization.members.some(member => member.userId === userId);
 
     if (!isMember) {
         throw new Error("NOT_A_MEMBER_OF_ORGANIZATION");
