@@ -4,10 +4,15 @@ import AdminOrganizationService from "../../services/admin/adminOrganizationServ
 
 const updateOrganization = async (req: Request, res: Response) => {
     try {
-        const orgId = parseInt(req.params.id as string, 10);
-        const input: AdminUpdateOrganizationInputType = req.body;
+        const id = Number(req.params.id);
 
-        const updateOrg = await AdminOrganizationService.updateOrganization(orgId, input);
+        if (isNaN(id)) {
+            res.status(400).send("아이디가 올바르지 않습니다.");
+            return;
+        }
+
+        const input: AdminUpdateOrganizationInputType = req.body;
+        const updateOrg = await AdminOrganizationService.updateOrganization(id, input);
         res.status(200).json({
             message: "단체 정보가 성공적으로 수정되었습니다.",
             data: updateOrg,
