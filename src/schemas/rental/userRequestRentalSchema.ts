@@ -8,3 +8,11 @@ export const userRequestRentalSchema = z.object({
     dueAt: z.coerce.date().optional(),
 });
 export type UserRequestRentalInputType = z.infer<typeof userRequestRentalSchema>;
+
+export const userUpdateRentalSchema = userRequestRentalSchema
+    .omit({
+        equipmentId: true,
+        equipmentUnitId: true,
+    })
+    .partial();
+export type UserUpdateRentalInputType = z.infer<typeof userUpdateRentalSchema>;

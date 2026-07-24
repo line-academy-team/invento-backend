@@ -1,9 +1,12 @@
 import { AuthRequest } from "../middlewares/auth.ts";
 import { Response } from "express";
 import stockService from "../services/stockService.ts";
-import { UserRequestStockInputType } from "../schemas/stock/userRequestStockSchema.ts";
+import {
+    UserRequestStockInputType,
+    UserUpdateStockInputType,
+} from "../schemas/stock/userRequestStockSchema.ts";
 
-const createStockRequest = async (req: AuthRequest<{ eqId: string }>, res: Response) => {
+const createStockRequest = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) {
             res.status(401).json({
@@ -66,11 +69,11 @@ const updateStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
             return;
         }
 
-        const input: UserRequestStockInputType = req.body;
+        const input: UserUpdateStockInputType = req.body;
         const updatedStock = await stockService.updateStockRequest(req.user.id, stockId, input);
 
         res.status(200).json({
-            message: "재고 수량 수정이 완료되었습니다.",
+            message: "재고 요청 수정이 완료되었습니다.",
             data: updatedStock,
         });
     } catch (error) {
@@ -87,7 +90,7 @@ const updateStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
                 return;
             }
         }
-        res.status(500).json({ message: "재고 수량 요청 중 서버 에러가 발생했습니다." });
+        res.status(500).json({ message: "재고 요청 수정 중 서버 에러가 발생했습니다." });
     }
 };
 
@@ -115,8 +118,9 @@ const deleteStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
                 });
                 return;
             }
-            if (error.message === "CANNOT_CANCLE_APPROVED_STOCK") {
+            if (error.message === "CANNOT_CANCEL_APPROVED_STOCK") {
                 res.status(400).json({ message: "승인 대기 중인 요청만 취소할 수 있습니다." });
+                return;
             }
         }
         res.status(500).json({ message: "재고 요청 취소 중 서버 에러가 발생했습니다." });

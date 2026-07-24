@@ -6,6 +6,7 @@ import adminRouter from "./routes/admin/adminRouter.ts";
 import organizationRouter from "./routes/organizationRouter.ts";
 import rentalRouter from "./routes/rentalRouter.ts";
 import stockRouter from "./routes/stockRouter.ts";
+import reportRouter from "./routes/reportRouter.ts";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use("/organization", organizationRouter);
 app.use("/rental", rentalRouter);
 app.use("/stock", stockRouter);
 app.use("/report", rentalRouter);
+app.use("/report", reportRouter);
 
 app.use("/admin", adminRouter);
 

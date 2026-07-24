@@ -6,3 +6,10 @@ export const userRequestStockSchema = z.object({
     reason: z.string().optional(),
 });
 export type UserRequestStockInputType = z.infer<typeof userRequestStockSchema>;
+
+export const userUpdateStockSchema = userRequestStockSchema
+    .omit({
+        equipmentId: true,
+    })
+    .partial();
+export type UserUpdateStockInputType = z.infer<typeof userUpdateStockSchema>;
