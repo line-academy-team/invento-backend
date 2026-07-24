@@ -22,9 +22,20 @@ const getMyStockList = async (userId: number) => {
         where: {
             requesterId: member.id,
         },
-        include: {
-            equipment: true,
-            requester: true,
+        select: {
+            id: true,
+            quantity: true,
+            reason: true,
+            status: true,
+            createdAt: true,
+            equipment: {
+                select: {
+                    id: true,
+                    name: true,
+                    imageUrl: true,
+                    category: true,
+                },
+            },
         },
         orderBy: {
             createdAt: "desc",
@@ -42,6 +53,7 @@ const updateStockRequest = async (
     const stock = await prisma.equipmentStockRequest.findFirst({
         where: {
             id: stockId,
+            requesterId: member.id,
         },
     });
 
@@ -54,9 +66,9 @@ const updateStockRequest = async (
     return prisma.equipmentStockRequest.update({
         where: { id: stockId },
         data: {
-            requesterId: member.id,
-            quantity: input.quantity ?? null,
-            reason: input.reason ?? null,
+            equipmentId: input.equipmentId,
+            quantity: input.quantity,
+            ...(input.reason && { reason: input.reason }),
         },
     });
 };

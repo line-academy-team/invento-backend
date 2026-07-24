@@ -15,7 +15,7 @@ const createStockRequest = async (req: AuthRequest<{ eqId: string }>, res: Respo
         const input: UserRequestStockInputType = req.body;
         const stock = await stockService.createStock(req.user.id, input);
 
-        res.status(200).json({
+        res.status(201).json({
             message: "재고 수량 요청이 완료되었습니다. 관리자 승인을 대기해주세요.",
             data: stock,
         });
@@ -43,7 +43,7 @@ const getMyStockList = async (req: AuthRequest, res: Response) => {
         });
     } catch (error) {
         console.log(error);
-        if (error instanceof Error && error.message === "MEMBER_NOR_FOUND") {
+        if (error instanceof Error && error.message === "MEMBER_NOT_FOUND") {
             res.status(403).json({ message: "소속된 단체 멤버 정보를 찾을 수 없습니다." });
             return;
         }
@@ -63,6 +63,7 @@ const updateStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
         const stockId = Number(req.params.stockId);
         if (isNaN(stockId)) {
             res.status(400).json({ message: "유효하지 않은 재고 요청 ID입니다." });
+            return;
         }
 
         const input: UserRequestStockInputType = req.body;
