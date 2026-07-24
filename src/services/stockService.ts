@@ -1,4 +1,7 @@
-import { UserRequestStockInputType } from "../schemas/stock/userRequestStockSchema.ts";
+import {
+    UserRequestStockInputType,
+    UserUpdateStockInputType,
+} from "../schemas/stock/userRequestStockSchema.ts";
 import { getMemberByUserId } from "./rentalService.ts";
 import prisma from "../config/prisma.ts";
 
@@ -46,7 +49,7 @@ const getMyStockList = async (userId: number) => {
 const updateStockRequest = async (
     userId: number,
     stockId: number,
-    input: UserRequestStockInputType,
+    input: UserUpdateStockInputType,
 ) => {
     const member = await getMemberByUserId(userId);
 
@@ -66,8 +69,7 @@ const updateStockRequest = async (
     return prisma.equipmentStockRequest.update({
         where: { id: stockId },
         data: {
-            equipmentId: input.equipmentId,
-            quantity: input.quantity,
+            ...(input.quantity !== undefined && { quantity: input.quantity }),
             ...(input.reason && { reason: input.reason }),
         },
     });
@@ -86,7 +88,7 @@ const deleteStockRequest = async (userId: number, stockId: number) => {
     if (!stock) throw new Error("STOCK_NOT_FOUND");
 
     if (stock.status !== "PENDING") {
-        throw new Error("CANNOT_CANCLE_APPROVED_STOCK");
+        throw new Error("CANNOT_CANCEL_APPROVED_STOCK");
     }
 
     return prisma.equipmentStockRequest.delete({

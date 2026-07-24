@@ -1,6 +1,9 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.ts";
-import { UserRequestRentalInputType } from "../schemas/rental/userRequestRentalSchema.ts";
+import {
+    UserRequestRentalInputType,
+    UserUpdateRentalInputType,
+} from "../schemas/rental/userRequestRentalSchema.ts";
 import rentalService from "../services/rentalService.ts";
 
 const getMyRentalList = async (req: AuthRequest, res: Response) => {
@@ -29,7 +32,7 @@ const getMyRentalList = async (req: AuthRequest, res: Response) => {
     }
 };
 
-const getOrgRentalList = async (req: AuthRequest<{ orgId: string }>, res: Response) => {
+const getOrgRentalList = async (req: AuthRequest<{ ozId: string }>, res: Response) => {
     try {
         if (!req.user) {
             res.status(401).json({
@@ -38,9 +41,10 @@ const getOrgRentalList = async (req: AuthRequest<{ orgId: string }>, res: Respon
             return;
         }
 
-        const ozId = Number(req.params.orgId);
+        const ozId = Number(req.params.ozId);
         if (isNaN(ozId)) {
             res.status(400).json({ message: "유효하지 않은 조직 ID입니다." });
+            return;
         }
 
         const rental = await rentalService.getOrgRentalList(ozId);
@@ -99,20 +103,20 @@ const returnRental = async (req: AuthRequest<{ rentalId: string }>, res: Respons
     }
 };
 
-const updateRental = async (req: AuthRequest<{ id: string }>, res: Response) => {
+const updateRental = async (req: AuthRequest<{ rentalId: string }>, res: Response) => {
     try {
         if (!req.user) {
             res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
             return;
         }
 
-        const rentalId = Number(req.body.rentalId);
+        const rentalId = Number(req.params.rentalId);
         if (isNaN(rentalId)) {
             res.status(400).json({ message: "유효하지 않은 대여 ID입니다." });
             return;
         }
 
-        const input: UserRequestRentalInputType = req.body;
+        const input: UserUpdateRentalInputType = req.body;
         const updatedRental = await rentalService.updateRental(req.user.id, rentalId, input);
 
         res.status(200).json({
@@ -135,14 +139,14 @@ const updateRental = async (req: AuthRequest<{ id: string }>, res: Response) => 
     }
 };
 
-const deleteRental = async (req: AuthRequest<{ id: string }>, res: Response) => {
+const deleteRental = async (req: AuthRequest<{ rentalId: string }>, res: Response) => {
     try {
         if (!req.user) {
             res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
             return;
         }
 
-        const rentalId = Number(req.params.id);
+        const rentalId = Number(req.params.rentalId);
         if (isNaN(rentalId)) {
             res.status(400).json({ message: "유효하지 않은 대여 ID입니다." });
             return;
@@ -157,7 +161,7 @@ const deleteRental = async (req: AuthRequest<{ id: string }>, res: Response) => 
                 res.status(404).json({ message: "대여 내역을 찾을 수 없거나 권한이 없습니다." });
                 return;
             }
-            if (error.message === "CANNOT_CANCLE_APPROVED_RENTAL") {
+            if (error.message === "CANNOT_CANCEL_APPROVED_RENTAL") {
                 res.status(400).json({ message: "승인 대기 중인 대여 신청만 취소할 수 있습니다." });
                 return;
             }

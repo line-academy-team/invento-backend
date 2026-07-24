@@ -2,7 +2,10 @@ import { Router } from "express";
 import { authenticate } from "../middlewares/auth.ts";
 import stockController from "../controllers/stockController.ts";
 import { validate } from "../middlewares/validate.ts";
-import { userRequestStockSchema } from "../schemas/stock/userRequestStockSchema.ts";
+import {
+    userRequestStockSchema,
+    userUpdateStockSchema,
+} from "../schemas/stock/userRequestStockSchema.ts";
 
 const router = Router();
 
@@ -16,7 +19,7 @@ router.get("/me", authenticate, stockController.getMyStockList);
 router.patch(
     "/:stockId",
     authenticate,
-    validate(userRequestStockSchema),
+    validate(userUpdateStockSchema),
     stockController.updateStockRequest,
 );
 router.delete("/:stockId", authenticate, stockController.deleteStockRequest);

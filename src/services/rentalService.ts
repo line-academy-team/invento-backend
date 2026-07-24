@@ -1,4 +1,7 @@
-import { UserRequestRentalInputType } from "../schemas/rental/userRequestRentalSchema.ts";
+import {
+    UserRequestRentalInputType,
+    UserUpdateRentalInputType,
+} from "../schemas/rental/userRequestRentalSchema.ts";
 import prisma from "../config/prisma.ts";
 
 export const getMemberByUserId = async (userId: number) => {
@@ -118,11 +121,7 @@ const returnRental = async (userId: number, rentalId: number) => {
     });
 };
 
-const updateRental = async (
-    userId: number,
-    rentalId: number,
-    input: UserRequestRentalInputType,
-) => {
+const updateRental = async (userId: number, rentalId: number, input: UserUpdateRentalInputType) => {
     const member = await getMemberByUserId(userId);
 
     const rental = await prisma.rental.findFirst({
@@ -139,8 +138,6 @@ const updateRental = async (
     return prisma.rental.update({
         where: { id: rentalId },
         data: {
-            equipmentId: input.equipmentId,
-            ...(input.equipmentUnitId && { equipmentUnitId: input.equipmentUnitId }),
             ...(input.quantity !== undefined && { quantity: input.quantity }),
             ...(input.reason && { reason: input.reason }),
             ...(input.dueAt && { dueAt: input.dueAt }),
