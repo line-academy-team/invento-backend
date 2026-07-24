@@ -8,24 +8,31 @@ import type { UpdateUserInputType } from "../schemas/user/updateUserSchema.ts";
 import type { UpdatePasswordInputType } from "../schemas/user/updatePasswordSchema.ts";
 import type { WithdrawUserInputType } from "../schemas/user/withdrawUserSchema.ts";
 
-const getMe = (req: AuthRequest, res: Response) => {
+const getMe = async (req: AuthRequest, res: Response) => {
     if (!req.user) {
         res.status(401).json({
             message: "유효하지 않은 사용자이거나 탈퇴한 계정입니다.",
         });
         return;
     }
-    res.status(200).json({
-        message: "사용자 정보 확인이 완료되었습니다.",
-        data: req.user,
-    });
+
+    try {
+        // 인증 미들웨어를 통과한 유저의 전체 정보(소속 조직, 부서 포함)를 조회합니다.
+        const authData = await userService.getUserWithMemberInfo(req.user.id);
+
+        res.status(200).json({
+            message: "사용자 정보 확인이 완료되었습니다.",
+            data: authData, // { user, memberInfo } 형태로 반환됩니다.
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "사용자 정보 조회 중 오류가 발생했습니다." });
+    }
 };
 
 const createUser = async (req: Request, res: Response) => {
     try {
         const input: UserSignupInputType = req.body;
-
-        // 비밀번호 해싱
         const hashedPassword = await passwordUtil.hashPassword(input.passwordHash);
 
         const userData = {
@@ -55,6 +62,7 @@ const createUser = async (req: Request, res: Response) => {
 const login = async (req: Request, res: Response) => {
     try {
         const loginData: LoginInputType = req.body;
+        // userService.login() 의 리턴값은 이제 { user, memberInfo, token } 형태입니다.
         const result = await userService.login(loginData);
 
         res.status(200).json({
@@ -82,7 +90,6 @@ const updateUser = async (req: AuthRequest, res: Response) => {
 
         const userId = req.user.id;
         const input: UpdateUserInputType = req.body;
-
         const result = await userService.updateUser(userId, input);
 
         res.status(200).json({
@@ -90,11 +97,9 @@ const updateUser = async (req: AuthRequest, res: Response) => {
             data: result,
         });
     } catch (error) {
-        if (error instanceof Error) {
-            if (error.message === "NOT_FOUND_USER") {
-                res.status(404).json({ message: "해당 사용자를 찾을 수 없습니다." });
-                return;
-            }
+        if (error instanceof Error && error.message === "NOT_FOUND_USER") {
+            res.status(404).json({ message: "해당 사용자를 찾을 수 없습니다." });
+            return;
         }
         console.error(error);
         res.status(500).json({ message: "서버 에러가 발생했습니다." });
@@ -113,9 +118,7 @@ const updatePassword = async (req: AuthRequest, res: Response) => {
 
         await userService.updatePassword(userId, currentPassword, newPassword);
 
-        res.status(200).json({
-            message: "비밀번호가 성공적으로 변경되었습니다.",
-        });
+        res.status(200).json({ message: "비밀번호가 성공적으로 변경되었습니다." });
     } catch (error) {
         if (error instanceof Error) {
             if (error.message === "NOT_FOUND_USER") {
@@ -139,13 +142,11 @@ const withdrawUser = async (req: AuthRequest, res: Response) => {
         }
 
         const userId = req.user.id;
-        const { password, reason }: WithdrawUserInputType = req.body;
+        const { password }: WithdrawUserInputType = req.body;
 
         await userService.withdrawUser(userId, password);
 
-        res.status(200).json({
-            message: "회원 탈퇴가 성공적으로 처리되었습니다.",
-        });
+        res.status(200).json({ message: "회원 탈퇴가 성공적으로 처리되었습니다." });
     } catch (error) {
         if (error instanceof Error) {
             if (error.message === "NOT_FOUND_USER") {
