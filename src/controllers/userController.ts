@@ -33,7 +33,7 @@ const getMe = async (req: AuthRequest, res: Response) => {
 const createUser = async (req: Request, res: Response) => {
     try {
         const input: UserSignupInputType = req.body;
-        const hashedPassword = await passwordUtil.hashPassword(input.passwordHash);
+        const hashedPassword = await passwordUtil.hashPassword(input.password);
 
         const userData = {
             email: input.email,
