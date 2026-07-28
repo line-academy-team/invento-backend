@@ -8,7 +8,7 @@ export const getMemberByUserId = async (userId: number) => {
     const member = await prisma.member.findFirst({
         where: {
             userId,
-            status: { in: ["APPROVED"] },
+            status: "APPROVED",
         },
     });
     if (!member) {
@@ -82,15 +82,32 @@ const getOrgRentalList = async (ozId: number) => {
 const createRental = async (userId: number, input: UserRequestRentalInputType) => {
     const member = await getMemberByUserId(userId);
 
-    return prisma.rental.create({
-        data: {
-            memberId: member.id,
-            equipmentId: input.equipmentId,
-            ...(input.equipmentUnitId && { equipmentUnitId: input.equipmentUnitId }),
-            ...(input.quantity !== undefined && { quantity: input.quantity }),
-            ...(input.reason && { reason: input.reason }),
-            ...(input.dueAt && { dueAt: input.dueAt }),
-        },
+    return prisma.$transaction(async tx => {
+        const equipment = await tx.equipment.findUnique({
+            where: { id: input.equipmentId },
+        });
+
+        if (!equipment) throw new Error("EQUIPMENT_NOT_FOUND");
+        if (equipment.availableQuantity < (input.quantity ?? 1)) {
+            throw new Error("AVAILABLE_QUANTITY_NOT_ENOUGH");
+        }
+
+        await tx.equipment.update({
+            where: { id: input.equipmentId },
+            data: { availableQuantity: equipment.availableQuantity - (input.quantity ?? 1) },
+        });
+
+        return tx.rental.create({
+            data: {
+                memberId: member.id,
+                equipmentId: input.equipmentId,
+                ...(input.equipmentUnitId && { equipmentUnitId: input.equipmentUnitId }),
+                ...(input.quantity !== undefined && { quantity: input.quantity }),
+                ...(input.reason && { reason: input.reason }),
+                ...(input.dueAt && { dueAt: input.dueAt }),
+                status: "REQUESTED",
+            },
+        });
     });
 };
 
@@ -104,20 +121,25 @@ const returnRental = async (userId: number, rentalId: number) => {
         },
     });
 
-    if (!rental) {
-        throw new Error("RENTAL_NOT_FOUND");
-    }
+    if (!rental) throw new Error("RENTAL_NOT_FOUND");
 
     if (rental.status !== "BORROWED") {
         throw new Error("INVALID_RENTAL_STATUS");
     }
 
-    return prisma.rental.update({
-        where: { id: rentalId },
-        data: {
-            status: "RETURNED",
-            returnedAt: new Date(),
-        },
+    return prisma.$transaction(async tx => {
+        const equipment = await tx.equipment.findUnique({ where: { id: rental.equipmentId } });
+        if (equipment) {
+            await tx.equipment.update({
+                where: { id: rental.equipmentId },
+                data: { availableQuantity: equipment.availableQuantity + rental.quantity },
+            });
+        }
+
+        return tx.rental.update({
+            where: { id: rentalId },
+            data: { status: "RETURNED", returnedAt: new Date() }, // 스키마에 맞춘 상태값
+        });
     });
 };
 
@@ -140,7 +162,7 @@ const updateRental = async (userId: number, rentalId: number, input: UserUpdateR
         data: {
             ...(input.quantity !== undefined && { quantity: input.quantity }),
             ...(input.reason && { reason: input.reason }),
-            ...(input.dueAt && { dueAt: input.dueAt }),
+            ...(input.dueAt && { dueAt: new Date(input.dueAt) }),
         },
     });
 };
@@ -161,11 +183,18 @@ const deleteRental = async (userId: number, rentalId: number) => {
         throw new Error("CANNOT_CANCEL_APPROVED_RENTAL");
     }
 
-    return prisma.rental.update({
-        where: { id: rentalId },
-        data: {
-            status: "CANCELLED",
-        },
+    return prisma.$transaction(async tx => {
+        const equipment = await tx.equipment.findUnique({ where: { id: rental.equipmentId } });
+        if (equipment) {
+            await tx.equipment.update({
+                where: { id: rental.equipmentId },
+                data: { availableQuantity: equipment.availableQuantity + rental.quantity },
+            });
+        }
+
+        return tx.rental.delete({
+            where: { id: rentalId },
+        });
     });
 };
 
