@@ -7,6 +7,7 @@ import organizationRouter from "./routes/organizationRouter.ts";
 import rentalRouter from "./routes/rentalRouter.ts";
 import stockRouter from "./routes/stockRouter.ts";
 import reportRouter from "./routes/reportRouter.ts";
+import equipmentRouter from "./routes/equipmentRouter.ts";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/user", userRouter);
 app.use("/organization", organizationRouter);
 app.use("/rental", rentalRouter);
+app.use("/equipment", equipmentRouter);
 app.use("/stock", stockRouter);
 app.use("/report", rentalRouter);
 app.use("/report", reportRouter);
