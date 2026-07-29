@@ -2,7 +2,7 @@ import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.ts";
 import equipmentUnitService from "../services/equipmentUnitService.ts";
 
-const getUnits = async (req: AuthRequest<{ equipmentId: string }>, res: Response) => {
+const getUnitByEquipmentId = async (req: AuthRequest<{ equipmentId: string }>, res: Response) => {
     try {
         if (!req.user) {
             res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
@@ -99,7 +99,7 @@ const deleteUnit = async (req: AuthRequest<{ unitId: string }>, res: Response) =
 };
 
 export default {
-    getUnits,
+    getUnitByEquipmentId,
     createUnit,
     updateUnit,
     deleteUnit,

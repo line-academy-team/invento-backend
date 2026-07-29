@@ -9,7 +9,7 @@ import equipmentUnitController from "../controllers/equipmentUnitController.ts";
 
 const router = Router();
 
-router.get("/:equipmentId", authenticate, equipmentUnitController.getUnits);
+router.get("/:equipmentId", authenticate, equipmentUnitController.getUnitByEquipmentId);
 router.post(
     "/",
     authenticate,

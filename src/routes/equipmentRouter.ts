@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-router.get("/", authenticate, equipmentController.getEquipments);
+router.get("/", authenticate, equipmentController.getEquipmentList);
 router.get("/:equipmentId", authenticate, equipmentController.getEquipmentById);
 router.post(
     "/",

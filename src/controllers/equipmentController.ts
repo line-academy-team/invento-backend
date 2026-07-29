@@ -3,14 +3,14 @@ import { AuthRequest } from "../middlewares/auth.ts";
 import equipmentService from "../services/equipmentService.ts";
 import { UpdateEquipmentInputType } from "../schemas/manager/equipment/equipmentSchema.ts";
 
-const getEquipments = async (req: AuthRequest, res: Response) => {
+const getEquipmentList = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) {
             res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
             return;
         }
         const { category, search } = req.query;
-        const equipments = await equipmentService.getEquipments(
+        const equipments = await equipmentService.getEquipmentList(
             req.user.id,
             category as string,
             search as string,
@@ -126,7 +126,7 @@ const deleteEquipment = async (req: AuthRequest<{ equipmentId: string }>, res: R
 };
 
 export default {
-    getEquipments,
+    getEquipmentList,
     getEquipmentById,
     createEquipment,
     updateEquipment,

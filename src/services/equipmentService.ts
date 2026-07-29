@@ -5,7 +5,7 @@ import {
 } from "../schemas/manager/equipment/equipmentSchema.ts";
 import { getMemberByUserId } from "./rentalService.ts";
 
-const getEquipments = async (userId: number, category?: string, search?: string) => {
+const getEquipmentList = async (userId: number, category?: string, search?: string) => {
     const member = await getMemberByUserId(userId);
 
     return prisma.equipment.findMany({
@@ -98,7 +98,7 @@ const deleteEquipment = async (userId: number, equipmentId: number) => {
 };
 
 export default {
-    getEquipments,
+    getEquipmentList,
     getEquipmentById,
     createEquipment,
     updateEquipment,
