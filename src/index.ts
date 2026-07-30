@@ -9,6 +9,7 @@ import stockRouter from "./routes/stockRouter.ts";
 import reportRouter from "./routes/reportRouter.ts";
 import equipmentRouter from "./routes/equipmentRouter.ts";
 import equipmentUnitRouter from "./routes/equipmentUnitRouter.ts";
+import managerRouter from "./routes/manager/managerRouter.ts";
 
 dotenv.config();
 
@@ -28,8 +29,8 @@ app.use("/rental", rentalRouter);
 app.use("/equipment", equipmentRouter);
 app.use("/equipment-unit", equipmentUnitRouter);
 app.use("/stock", stockRouter);
-app.use("/report", rentalRouter);
 app.use("/report", reportRouter);
+app.use("/manager", managerRouter);
 
 app.use("/admin", adminRouter);
 
