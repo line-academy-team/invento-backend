@@ -3,6 +3,7 @@ import type { OrganizationUpdateInput } from "../generated/prisma/models/Organiz
 import { MemberRole, MemberStatus } from "../generated/prisma/enums.js";
 import type { UserOrganizationInputType } from "../schemas/organization/userOrganizationSchema.js";
 import { UserJoinOrganizationInputType } from "../schemas/organization/userJoinOrganizationSchema.ts";
+import { generateUniqueInviteCode } from "../utils/inviteCode/generateInviteCode.ts";
 
 const getOrganizationById = async (ozId: number, userId: number) => {
     const organization = await prisma.organization.findUnique({
@@ -52,17 +53,15 @@ const getOrganizationById = async (ozId: number, userId: number) => {
 };
 
 const createOrganization = async (userId: number, data: UserOrganizationInputType) => {
+    const inviteCode = await generateUniqueInviteCode();
+
     return prisma.organization.create({
         data: {
             name: data.name,
             description: data.description ?? null,
             logoUrl: data.logoUrl ?? null,
-            inviteCode: data.inviteCode,
-            creator: {
-                connect: {
-                    id: userId,
-                },
-            },
+            inviteCode,
+            createdBy: userId,
             members: {
                 create: {
                     userId: userId,
@@ -98,10 +97,7 @@ const deleteOrganization = async (ozId: number) => {
     });
 };
 
-const joinOrganization = async (
-    userId: number,
-    data: UserJoinOrganizationInputType,
-) => {
+const joinOrganization = async (userId: number, data: UserJoinOrganizationInputType) => {
     const existingAnyMember = await prisma.member.findFirst({
         where: {
             userId,
@@ -130,7 +126,7 @@ const joinOrganization = async (
         const department = await prisma.department.findFirst({
             where: {
                 organizationId: organization.id,
-                 name: { contains: data.department, mode: "insensitive" as const },
+                name: { contains: data.department, mode: "insensitive" as const },
             },
         });
 

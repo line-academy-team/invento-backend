@@ -93,12 +93,11 @@ const updateOrganization = async (req: AuthRequest<{ id: string }>, res: Respons
         const validated = await validateOwnerAndOrg(req, res);
         if (!validated) return;
 
-        const { name, description, logoUrl, inviteCode }: UserOrganizationInputType = req.body;
+        const { name, description, logoUrl }: UserOrganizationInputType = req.body;
         const organizationData: OrganizationUpdateInput = {
             name: name ?? null,
             description: description ?? null,
             logoUrl: logoUrl ?? null,
-            inviteCode: inviteCode ?? null,
         };
 
         const newOrg = await organizationService.updateOrganization(
