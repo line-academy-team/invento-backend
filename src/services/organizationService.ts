@@ -2,6 +2,7 @@ import prisma from "../config/prisma.js";
 import type { OrganizationUpdateInput } from "../generated/prisma/models/Organization.js";
 import { MemberRole, MemberStatus } from "../generated/prisma/enums.js";
 import type { UserOrganizationInputType } from "../schemas/organization/userOrganizationSchema.js";
+import { UserJoinOrganizationInputType } from "../schemas/organization/userJoinOrganizationSchema.ts";
 
 const getOrganizationById = async (ozId: number, userId: number) => {
     const organization = await prisma.organization.findUnique({
@@ -99,7 +100,7 @@ const deleteOrganization = async (ozId: number) => {
 
 const joinOrganization = async (
     userId: number,
-    data: { inviteCode: string; departmentId?: number | undefined },
+    data: UserJoinOrganizationInputType,
 ) => {
     const existingAnyMember = await prisma.member.findFirst({
         where: {
@@ -123,36 +124,42 @@ const joinOrganization = async (
 
     if (!organization) throw new Error("ORGANIZATION_NOT_FOUND");
 
-    if (data.departmentId) {
+    let departmentId: number | null = null;
+
+    if (data.department) {
         const department = await prisma.department.findFirst({
             where: {
-                id: data.departmentId,
                 organizationId: organization.id,
+                 name: { contains: data.department, mode: "insensitive" as const },
             },
         });
 
-        if (!department) throw new Error("INVALID_DEPARTMENT");
+        if (!department) {
+            return null;
+        }
+
+        departmentId = department?.id;
     }
 
     return prisma.member.create({
         data: {
             organizationId: organization.id,
             userId,
-            departmentId: data.departmentId ?? null,
+            departmentId: departmentId,
             role: MemberRole.MEMBER,
             status: MemberStatus.PENDING,
-            include: {
-                organization: {
-                    select: {
-                        id: true,
-                        name: true,
-                    },
+        },
+        include: {
+            organization: {
+                select: {
+                    id: true,
+                    name: true,
                 },
-                department: {
-                    select: {
-                        id: true,
-                        name: true,
-                    },
+            },
+            department: {
+                select: {
+                    id: true,
+                    name: true,
                 },
             },
         },

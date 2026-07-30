@@ -13,10 +13,18 @@ const getUnitByEquipmentId = async (req: AuthRequest<{ equipmentId: string }>, r
             res.status(400).json({ message: "유효하지 않은 장비 ID입니다." });
             return;
         }
-        const units = await equipmentUnitService.getUnitsByEquipmentId(equipmentId);
+        const units = await equipmentUnitService.getUnitsByEquipmentId(req.user.id, equipmentId);
         res.status(200).json({ message: "장비 유닛 목록을 조회했습니다.", data: units });
     } catch (error) {
         console.log(error);
+        if (error instanceof Error) {
+            if (error.message === "UNIT_NOT_FOUND") {
+                res.status(404).json({ message: "장비 유닛을 찾을 수 없습니다." });
+            }
+            if (error.message === "EQUIPMENTUNIT_NOT_IN_ORGANIZATION_OR_DEPARTMENT") {
+                res.status(403).json({ message: "조직이나 부서 내에 있는 장비 유닛이 아닙니다." });
+            }
+        }
         res.status(500).json({ message: "장비 유닛 조회 중 서버 에러가 발생했습니다." });
     }
 };

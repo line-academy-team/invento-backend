@@ -15,7 +15,7 @@ router.post(
     validate(userRequestStockSchema),
     stockController.createStockRequest,
 );
-router.get("/me", authenticate, stockController.getMyStockList);
+router.get("/", authenticate, stockController.getStockList);
 router.patch(
     "/:stockId",
     authenticate,

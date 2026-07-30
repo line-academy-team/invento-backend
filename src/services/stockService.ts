@@ -18,13 +18,36 @@ const createStock = async (userId: number, input: UserRequestStockInputType) => 
     });
 };
 
-const getMyStockList = async (userId: number) => {
-    const member = await getMemberByUserId(userId);
+const getStockList = async (userId: number, ozId?: number) => {
+    let where = {};
+
+    if (ozId) {
+        const isMember = await prisma.member.findFirst({
+            where: {
+                userId,
+                organizationId: ozId,
+                status: "APPROVED",
+            },
+        });
+
+        if (!isMember) {
+            throw new Error("NOT_A_MEMBER_OF_ORGANIZATION");
+        }
+
+        where = {
+            requester: {
+                organizationId: ozId,
+            },
+        };
+    } else {
+        const member = await getMemberByUserId(userId);
+        where = {
+            requesterId: member.id,
+        };
+    }
 
     return prisma.equipmentStockRequest.findMany({
-        where: {
-            requesterId: member.id,
-        },
+        where: where,
         select: {
             id: true,
             quantity: true,
@@ -98,7 +121,7 @@ const deleteStockRequest = async (userId: number, stockId: number) => {
 
 export default {
     createStock,
-    getMyStockList,
+    getStockList,
     updateStockRequest,
     deleteStockRequest,
 };

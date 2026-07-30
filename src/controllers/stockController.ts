@@ -30,7 +30,7 @@ const createStockRequest = async (req: AuthRequest, res: Response) => {
     }
 };
 
-const getMyStockList = async (req: AuthRequest, res: Response) => {
+const getStockList = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) {
             res.status(401).json({
@@ -39,7 +39,14 @@ const getMyStockList = async (req: AuthRequest, res: Response) => {
             return;
         }
 
-        const stock = await stockService.getMyStockList(req.user.id);
+        const ozId = req.query.ozId ? Number(req.query.ozId) : undefined;
+
+        if (ozId !== undefined && isNaN(ozId)) {
+            res.status(400).json({ message: "유효하지 않은 조직 ID입니다." });
+            return;
+        }
+
+        const stock = await stockService.getStockList(req.user.id, ozId);
         res.status(200).json({
             message: "내 재고 수량 요청 목록을 불러왔습니다.",
             data: stock,
@@ -129,7 +136,7 @@ const deleteStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
 
 export default {
     createStockRequest,
-    getMyStockList,
+    getStockList,
     updateStockRequest,
     deleteStockRequest,
 };

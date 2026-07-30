@@ -5,13 +5,38 @@ import {
 } from "../schemas/manager/equipment/equipmentUnitSchema.ts";
 import { getMemberByUserId } from "./rentalService.ts";
 
-const getUnitsByEquipmentId = async (equipmentId: number) => {
-    return prisma.equipmentUnit.findMany({
+const getUnitsByEquipmentId = async (userId: number, equipmentId: number) => {
+    const member = await getMemberByUserId(userId);
+    
+    let targetDepartmentId = 
+        member.role === "OWNER" ? undefined : (member.departmentId ?? undefined);
+    
+    const unit = await prisma.equipmentUnit.findMany({
         where: {
             equipmentId,
         },
         orderBy: { createdAt: "desc" },
     });
+    
+    const equipment = await prisma.equipment.findUnique({
+        where: {
+            id: equipmentId,
+        },
+    });
+    
+    if (!equipment) {
+        throw new Error("UNIT_NOT_FOUND");
+    }
+
+    if (
+        targetDepartmentId !== undefined &&
+        equipment.departmentId !== targetDepartmentId &&
+        equipment.organizationId !== member.organizationId
+    ) {
+        throw new Error("EQUIPMENTUNIT_NOT_IN_ORGANIZATION_OR_DEPARTMENT");
+    }
+
+    return unit;
 };
 
 const createEquipmentUnit = async (userId: number, input: CreateEquipmentUnitInputType) => {

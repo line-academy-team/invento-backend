@@ -9,11 +9,12 @@ const getEquipmentList = async (req: AuthRequest, res: Response) => {
             res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
             return;
         }
+
         const { category, search } = req.query;
         const equipments = await equipmentService.getEquipmentList(
             req.user.id,
-            category as string,
-            search as string,
+            category as string | undefined,
+            search as string | undefined,
         );
         res.status(200).json({ message: "장비 목록을 조회했습니다.", data: equipments });
     } catch (error) {
@@ -24,17 +25,27 @@ const getEquipmentList = async (req: AuthRequest, res: Response) => {
 
 const getEquipmentById = async (req: AuthRequest<{ equipmentId: string }>, res: Response) => {
     try {
+        if (!req.user) {
+            res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
+            return;
+        }
+
         const equipmentId = Number(req.params.equipmentId);
         if (isNaN(equipmentId)) {
             res.status(400).json({ message: "유효하지 않은 장비 ID입니다." });
             return;
         }
-        const equipment = await equipmentService.getEquipmentById(equipmentId);
+        const equipment = await equipmentService.getEquipmentById(req.user.id, equipmentId);
         res.status(200).json({ message: "장비 상세 정보를 조회했습니다.", data: equipment });
     } catch (error) {
-        if (error instanceof Error && error.message === "EQUIPMENT_NOT_FOUND") {
-            res.status(404).json({ message: "장비를 찾을 수 없습니다." });
-            return;
+        if (error instanceof Error) {
+            if (error.message === "EQUIPMENT_NOT_FOUND") {
+                res.status(404).json({ message: "장비를 찾을 수 없습니다." });
+                return;
+            }
+            if (error.message === "EQUIPMENT_NOT_IN_ORGANIZARION_OR_DEPARTMENT") {
+                res.status(403).json({ message: "조직이나 부서 내에 있는 장비가 아닙니다." });
+            }
         }
         res.status(500).json({ message: "장비 상세 조회 중 서버 에러가 발생했습니다." });
     }

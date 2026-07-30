@@ -8,11 +8,14 @@ import { getMemberByUserId } from "./rentalService.ts";
 const getEquipmentList = async (userId: number, category?: string, search?: string) => {
     const member = await getMemberByUserId(userId);
 
+    let targetDepartmentId = member.role === "OWNER" ? undefined : member.departmentId;
+
     return prisma.equipment.findMany({
         where: {
             organizationId: member.organizationId,
-            ...(category && category !== "전체" && { category }),
-            ...(search && { name: { contains: search, mode: "insensitive" } }),
+            ...(targetDepartmentId && { departmentId: targetDepartmentId }),
+            ...(category && { category }),
+            ...(search && { name: { contains: search, mode: "insensitive" as const } }),
         },
         include: {
             department: { select: { id: true, name: true } },
@@ -21,16 +24,32 @@ const getEquipmentList = async (userId: number, category?: string, search?: stri
     });
 };
 
-const getEquipmentById = async (equipmentId: number) => {
+const getEquipmentById = async (userId: number, equipmentId: number) => {
+    const member = await getMemberByUserId(userId);
+
+    let targetDepartmentId =
+        member.role === "OWNER" ? undefined : (member.departmentId ?? undefined);
+
     const equipment = await prisma.equipment.findUnique({
-        where: { id: equipmentId },
+        where: {
+            id: equipmentId,
+        },
         include: {
-            department: { select: { id: true, name: true } },
+            department: { select: { name: true } },
             units: true,
         },
     });
 
     if (!equipment) throw new Error("EQUIPMENT_NOT_FOUND");
+
+    if (
+        targetDepartmentId !== undefined &&
+        equipment.departmentId !== targetDepartmentId &&
+        equipment.organizationId !== member.organizationId
+    ) {
+        throw new Error("EQUIPMENT_NOT_IN_ORGANIZARION_OR_DEPARTMENT");
+    }
+
     return equipment;
 };
 

@@ -156,10 +156,6 @@ const joinOrganization = async (req: AuthRequest<{ id: string }>, res: Response)
                 res.status(404).json({ message: "올바르지 않은 초대 코드입니다." });
                 return;
             }
-            if (error.message === "INVALID_DEPARTMENT") {
-                res.status(400).json({ message: "해당 단체에 존재하지 않는 부서입니다." });
-                return;
-            }
         }
         console.log(error);
         res.status(500).json({ message: "단체 가입 신청 중 서버 에러가 발생했습니다." });
