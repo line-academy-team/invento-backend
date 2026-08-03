@@ -58,7 +58,7 @@ const getOrganizationById = async (req: AuthRequest<{ id: string }>, res: Respon
                 return;
             }
             if (error.message === "NOT_A_MEMBER_OF_ORGANIZATION") {
-                res.status(403).json({ messge: "해당 단체의 멤버만 조회할 수 있습니다." });
+                res.status(403).json({ message: "해당 단체의 멤버만 조회할 수 있습니다." });
                 return;
             }
         }
@@ -93,12 +93,11 @@ const updateOrganization = async (req: AuthRequest<{ id: string }>, res: Respons
         const validated = await validateOwnerAndOrg(req, res);
         if (!validated) return;
 
-        const { name, description, logoUrl, inviteCode }: UserOrganizationInputType = req.body;
+        const { name, description, logoUrl }: UserOrganizationInputType = req.body;
         const organizationData: OrganizationUpdateInput = {
             name: name ?? null,
             description: description ?? null,
             logoUrl: logoUrl ?? null,
-            inviteCode: inviteCode ?? null,
         };
 
         const newOrg = await organizationService.updateOrganization(
