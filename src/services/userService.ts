@@ -148,11 +148,15 @@ const updateUser = async (userId: number, input: UpdateUserInputType) => {
         where: { id: userId },
         data: {
             ...(input.name !== undefined && { name: input.name }),
+            // 👇 입력값에 imageUrl이 있으면 DB 업데이트 항목에 추가합니다.
+            ...(input.imageUrl !== undefined && { imageUrl: input.imageUrl }),
         },
         select: {
             id: true,
             email: true,
             name: true,
+            // 👇 수정된 유저 정보 반환 시 imageUrl도 함께 반환되도록 추가합니다.
+            imageUrl: true,
             updatedAt: true,
         },
     });
