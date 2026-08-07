@@ -20,26 +20,25 @@ const getOrgMemberList = async (userId: number, search?: string) => {
                     { department: { name: { contains: search } } },
                 ],
             }),
-            select: {
-                id: true,
-                role: true,
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                    },
-                    orderBy: { name: "asc" },
-                },
-                department: {
-                    select: {
-                        id: true,
-                        name: true,
-                    },
+        },
+        select: {
+            id: true,
+            role: true,
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
                 },
             },
-            orderBy: { user: { name: "asc" } },
+            department: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
         },
+        orderBy: { user: { name: "asc" } },
     });
 };
 
