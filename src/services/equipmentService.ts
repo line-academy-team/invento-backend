@@ -56,7 +56,9 @@ const getEquipmentById = async (userId: number, equipmentId: number) => {
 const createEquipment = async (userId: number, input: CreateEquipmentInputType) => {
     const member = await getMemberByUserId(userId);
 
-    if (member.role === "MEMBER") throw new Error("CANNOT_CREATE_EQUIPMENT_MEMBER");
+    if (member.role === "MEMBER") {
+        throw new Error("CANNOT_CREATE_EQUIPMENT_MEMBER");
+    }
 
     return prisma.equipment.create({
         data: {
@@ -64,9 +66,13 @@ const createEquipment = async (userId: number, input: CreateEquipmentInputType) 
             type: input.type,
             totalQuantity: input.totalQuantity,
             availableQuantity: input.totalQuantity,
+
             organizationId: member.organizationId,
             createdBy: member.id,
-            departmentId: input.departmentId ?? null,
+
+            departmentId:
+                member.role === "OWNER" ? (input.departmentId ?? null) : member.departmentId,
+
             category: input.category ?? null,
             description: input.description ?? null,
             imageUrl: input.imageUrl ?? null,
