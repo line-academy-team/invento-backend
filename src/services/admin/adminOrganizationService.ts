@@ -9,15 +9,24 @@ const getOrganizationList = async () => {
         select: {
             id: true,
             name: true,
+            description: true,
             logoUrl: true,
+            inviteCode: true,
             createdBy: true,
-            creator: true,
+            creator: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
             createdAt: true,
+            updatedAt: true,
             deletedAt: true,
             _count: {
                 select: {
                     members: true,
-                    equipment: true,
+                    equipments: true,
                 },
             },
         },
@@ -36,13 +45,20 @@ const getOrganizationById = async (orgId: number) => {
             logoUrl: true,
             inviteCode: true,
             createdBy: true,
-            creator: true,
+            creator: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
             createdAt: true,
+            updatedAt: true,
             deletedAt: true,
             _count: {
                 select: {
                     members: true,
-                    equipment: true,
+                    equipments: true,
                 },
             },
         },
