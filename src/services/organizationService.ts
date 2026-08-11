@@ -53,13 +53,21 @@ const getOrganizationById = async (ozId: number, userId: number) => {
 };
 
 const createOrganization = async (userId: number, data: UserOrganizationInputType) => {
+    const existingOrg = await prisma.organization.findFirst({
+        where: { createdBy: userId, deletedAt: null },
+    });
+
+    if (existingOrg) {
+        throw new Error("ALREADY_CREATED_ORGANIZATION");
+    }
+
     const inviteCode = await generateUniqueInviteCode();
 
     return prisma.organization.create({
         data: {
             name: data.name,
-            description: data.description ?? null,
-            logoUrl: data.logoUrl ?? null,
+            description: data.description || null,
+            logoUrl: data.logoUrl || null,
             inviteCode,
             createdBy: userId,
             members: {

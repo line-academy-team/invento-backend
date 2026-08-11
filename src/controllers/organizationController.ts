@@ -84,6 +84,13 @@ const createOrganization = async (req: AuthRequest, res: Response) => {
         });
     } catch (error) {
         console.log(error);
+        if (error instanceof Error && error.message === "ALREADY_CREATED_ORGANIZATION") {
+            res.status(409).json({
+                message:
+                    "이미 생성한 조직이 존재합니다. 한 계정당 하나의 조직만 생성할 수 있습니다.",
+            });
+            return;
+        }
         res.status(500).json({ message: "조직 생성 중 서버 에러가 발생했습니다." });
     }
 };
