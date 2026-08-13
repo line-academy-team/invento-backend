@@ -6,6 +6,7 @@ import {
     userUpdateRentalSchema,
 } from "../schemas/rental/userRequestRentalSchema.ts";
 import rentalController from "../controllers/rentalController.ts";
+import { processRentalSchema } from "../schemas/manager/rental/processRentalSchema.ts";
 
 const router = Router();
 
@@ -16,6 +17,14 @@ router.post(
     rentalController.createRentalRequest,
 );
 router.get("/me", authenticate, rentalController.getMyRentalList);
+router.get("/me/:rentalId", authenticate, rentalController.getMyRentalById);
+router.get("/:ozId/:rentalId", authenticate, rentalController.getOrgRentalById);
+router.patch(
+    "/:ozId/:rentalId/process",
+    authenticate,
+    validate(processRentalSchema),
+    rentalController.processRental,
+);
 router.get("/:ozId", authenticate, rentalController.getOrgRentalList);
 router.patch("/return/:rentalId", authenticate, rentalController.returnRental);
 router.patch(

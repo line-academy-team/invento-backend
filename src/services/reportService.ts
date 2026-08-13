@@ -2,6 +2,7 @@ import {
     UserCreateReportInputType,
     UserUpdateReportInputType,
 } from "../schemas/report/userReportSchema.ts";
+import { ProcessReportInputType } from "../schemas/manager/report/processReportSchema.ts";
 import prisma from "../config/prisma.ts";
 import { getMemberByUserId } from "./rentalService.ts";
 
@@ -23,16 +24,17 @@ const getReportList = async (userId: number, ozId?: number) => {
     let whereCondition = {};
 
     if (ozId) {
-        const isMember = await prisma.member.findFirst({
+        const isManager = await prisma.member.findFirst({
             where: {
                 userId,
                 organizationId: ozId,
                 status: "APPROVED",
+                role: { in: ["OWNER", "MANAGER"] },
             },
         });
 
-        if (!isMember) {
-            throw new Error("NOT_A_MEMBER_OF_ORGANIZATION");
+        if (!isManager) {
+            throw new Error("MANAGER_PERMISSION_REQUIRED");
         }
 
         whereCondition = {
@@ -51,6 +53,8 @@ const getReportList = async (userId: number, ozId?: number) => {
         where: whereCondition,
         select: {
             id: true,
+            equipmentId: true,
+            reporterId: true,
             type: true,
             title: true,
             content: true,
@@ -90,21 +94,67 @@ const getReportList = async (userId: number, ozId?: number) => {
 const getReportById = async (userId: number, reportId: number) => {
     const member = await getMemberByUserId(userId);
 
-    const isMember = await prisma.member.findFirst({
+    const report = await prisma.report.findFirst({
         where: {
-            userId,
-            organizationId: member.organizationId,
-            status: "APPROVED",
+            id: reportId,
+            reporter: {
+                organizationId: member.organizationId,
+            },
+            ...(member.role === "MEMBER" && { reporterId: member.id }),
+        },
+        include: {
+            reporter: {
+                select: {
+                    id: true,
+                    role: true,
+                    user: { select: { name: true, email: true } },
+                    department: { select: { id: true, name: true } },
+                },
+            },
+            equipment: {
+                select: {
+                    id: true,
+                    name: true,
+                    imageUrl: true,
+                    category: true,
+                },
+            },
         },
     });
 
-    if (!isMember) {
-        throw new Error("NOT_A_MEMBER_OF_ORGANIZATION");
-    }
+    if (!report) throw new Error("REPORT_NOT_FOUND");
+    return report;
+};
 
-    return prisma.report.findUnique({
+const processReport = async (userId: number, reportId: number, input: ProcessReportInputType) => {
+    const manager = await prisma.member.findFirst({
+        where: {
+            userId,
+            status: "APPROVED",
+            role: { in: ["OWNER", "MANAGER"] },
+        },
+    });
+
+    if (!manager) throw new Error("MANAGER_PERMISSION_REQUIRED");
+
+    const report = await prisma.report.findFirst({
         where: {
             id: reportId,
+            reporter: { organizationId: manager.organizationId },
+        },
+    });
+
+    if (!report) throw new Error("REPORT_NOT_FOUND");
+    if (report.status === "COMPLETED") throw new Error("REPORT_ALREADY_PROCESSED");
+
+    return prisma.report.update({
+        where: { id: reportId },
+        data: {
+            type: input.type,
+            result: input.result,
+            status: "COMPLETED",
+            processedBy: manager.id,
+            processedAt: new Date(),
         },
     });
 };
@@ -162,6 +212,7 @@ export default {
     createReport,
     getReportList,
     getReportById,
+    processReport,
     updateReport,
     deleteReport,
 };

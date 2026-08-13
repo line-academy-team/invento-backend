@@ -4,6 +4,7 @@ import {
     UserCreateReportInputType,
     UserUpdateReportInputType,
 } from "../schemas/report/userReportSchema.ts";
+import { ProcessReportInputType } from "../schemas/manager/report/processReportSchema.ts";
 import reportService from "../services/reportService.ts";
 
 const createReportRequest = async (req: AuthRequest, res: Response) => {
@@ -54,8 +55,8 @@ const getReportList = async (req: AuthRequest, res: Response) => {
                 res.status(403).json({ message: "소속된 단체 멤버 정보를 찾을 수 없습니다." });
                 return;
             }
-            if (error.message === "NOT_A_MEMBER_OF_ORGANIZATION") {
-                res.status(403).json({ message: "해당 조직의 멤버만 조회할 수 있습니다." });
+            if (error.message === "MANAGER_PERMISSION_REQUIRED") {
+                res.status(403).json({ message: "보고 관리 권한이 없습니다." });
                 return;
             }
         }
@@ -86,11 +87,47 @@ const getReportById = async (req: AuthRequest<{ reportId: string }>, res: Respon
         });
     } catch (error) {
         console.log(error);
-        if (error instanceof Error && error.message === "NOT_A_MEMBER_OF_ORGANIZATION") {
-            res.status(403).json({ message: "해당 조직의 멤버만 조회할 수 있습니다." });
+        if (error instanceof Error && error.message === "REPORT_NOT_FOUND") {
+            res.status(404).json({ message: "보고 내용을 찾을 수 없습니다." });
             return;
         }
         res.status(500).json({ message: "보고 내용을 불러오는 중 서버 에러가 발생했습니다." });
+    }
+};
+
+const processReport = async (req: AuthRequest<{ reportId: string }>, res: Response) => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ message: "로그인이 필요한 서비스입니다." });
+            return;
+        }
+
+        const reportId = Number(req.params.reportId);
+        if (isNaN(reportId)) {
+            res.status(400).json({ message: "유효하지 않은 보고 ID입니다." });
+            return;
+        }
+
+        const input: ProcessReportInputType = req.body;
+        const report = await reportService.processReport(req.user.id, reportId, input);
+        res.status(200).json({ message: "보고 처리가 완료되었습니다.", data: report });
+    } catch (error) {
+        console.log(error);
+        if (error instanceof Error) {
+            if (error.message === "MANAGER_PERMISSION_REQUIRED") {
+                res.status(403).json({ message: "보고 관리 권한이 없습니다." });
+                return;
+            }
+            if (error.message === "REPORT_NOT_FOUND") {
+                res.status(404).json({ message: "보고 내용을 찾을 수 없습니다." });
+                return;
+            }
+            if (error.message === "REPORT_ALREADY_PROCESSED") {
+                res.status(400).json({ message: "이미 처리된 보고입니다." });
+                return;
+            }
+        }
+        res.status(500).json({ message: "보고 처리 중 서버 에러가 발생했습니다." });
     }
 };
 
@@ -169,6 +206,7 @@ export default {
     createReportRequest,
     getReportList,
     getReportById,
+    processReport,
     updateReport,
     deleteReport,
 };

@@ -43,9 +43,8 @@ const getEquipmentById = async (userId: number, equipmentId: number) => {
     if (!equipment) throw new Error("EQUIPMENT_NOT_FOUND");
 
     if (
-        targetDepartmentId !== undefined &&
-        equipment.departmentId !== targetDepartmentId &&
-        equipment.organizationId !== member.organizationId
+        equipment.organizationId !== member.organizationId ||
+        (targetDepartmentId !== undefined && equipment.departmentId !== targetDepartmentId)
     ) {
         throw new Error("EQUIPMENT_NOT_IN_ORGANIZARION_OR_DEPARTMENT");
     }

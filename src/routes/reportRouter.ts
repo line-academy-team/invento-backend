@@ -3,6 +3,7 @@ import { authenticate } from "../middlewares/auth.ts";
 import { validate } from "../middlewares/validate.ts";
 import { userReportSchema, userUpdateReportSchema } from "../schemas/report/userReportSchema.ts";
 import reportController from "../controllers/reportController.ts";
+import { processReportSchema } from "../schemas/manager/report/processReportSchema.ts";
 
 const router = Router();
 
@@ -14,6 +15,12 @@ router.post(
 );
 router.get("/", authenticate, reportController.getReportList);
 router.get("/:reportId", authenticate, reportController.getReportById);
+router.patch(
+    "/:reportId/process",
+    authenticate,
+    validate(processReportSchema),
+    reportController.processReport,
+);
 router.patch(
     "/:reportId",
     authenticate,

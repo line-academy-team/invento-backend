@@ -2,6 +2,7 @@ import {
     UserRequestRentalInputType,
     UserUpdateRentalInputType,
 } from "../schemas/rental/userRequestRentalSchema.ts";
+import { ProcessRentalInputType } from "../schemas/manager/rental/processRentalSchema.ts";
 import prisma from "../config/prisma.ts";
 
 export const getMemberByUserId = async (userId: number) => {
@@ -14,6 +15,20 @@ export const getMemberByUserId = async (userId: number) => {
     if (!member) {
         throw new Error("MEMBER_NOT_FOUND");
     }
+    return member;
+};
+
+const getManagerMemberByUserId = async (userId: number, organizationId: number) => {
+    const member = await prisma.member.findFirst({
+        where: {
+            userId,
+            organizationId,
+            status: "APPROVED",
+            role: { in: ["OWNER", "MANAGER"] },
+        },
+    });
+
+    if (!member) throw new Error("MANAGER_PERMISSION_REQUIRED");
     return member;
 };
 
@@ -46,7 +61,36 @@ const getMyRentalList = async (userId: number) => {
     });
 };
 
-const getOrgRentalList = async (ozId: number) => {
+const getMyRentalById = async (userId: number, rentalId: number) => {
+    const member = await getMemberByUserId(userId);
+
+    const rental = await prisma.rental.findFirst({
+        where: { id: rentalId, memberId: member.id },
+        include: {
+            equipment: {
+                select: {
+                    id: true,
+                    name: true,
+                    imageUrl: true,
+                    category: true,
+                },
+            },
+            equipmentUnit: {
+                select: {
+                    id: true,
+                    assetNumber: true,
+                },
+            },
+        },
+    });
+
+    if (!rental) throw new Error("RENTAL_NOT_FOUND");
+    return rental;
+};
+
+const getOrgRentalList = async (userId: number, ozId: number) => {
+    await getManagerMemberByUserId(userId, ozId);
+
     return prisma.rental.findMany({
         where: {
             equipment: {
@@ -61,6 +105,13 @@ const getOrgRentalList = async (ozId: number) => {
                     user: {
                         select: {
                             name: true,
+                            email: true,
+                        },
+                    },
+                    department: {
+                        select: {
+                            id: true,
+                            name: true,
                         },
                     },
                 },
@@ -70,12 +121,96 @@ const getOrgRentalList = async (ozId: number) => {
                     id: true,
                     name: true,
                     status: true,
+                    category: true,
+                    imageUrl: true,
                 },
             },
         },
         orderBy: {
             createdAt: "desc",
         },
+    });
+};
+
+const getOrgRentalById = async (userId: number, ozId: number, rentalId: number) => {
+    await getManagerMemberByUserId(userId, ozId);
+
+    const rental = await prisma.rental.findFirst({
+        where: {
+            id: rentalId,
+            equipment: { organizationId: ozId },
+        },
+        include: {
+            member: {
+                select: {
+                    id: true,
+                    departmentId: true,
+                    role: true,
+                    user: { select: { name: true, email: true } },
+                    department: { select: { id: true, name: true } },
+                },
+            },
+            equipment: {
+                select: {
+                    id: true,
+                    name: true,
+                    status: true,
+                    category: true,
+                    imageUrl: true,
+                },
+            },
+            equipmentUnit: {
+                select: { id: true, assetNumber: true },
+            },
+        },
+    });
+
+    if (!rental) throw new Error("RENTAL_NOT_FOUND");
+    return rental;
+};
+
+const processRental = async (
+    userId: number,
+    ozId: number,
+    rentalId: number,
+    input: ProcessRentalInputType,
+) => {
+    const manager = await getManagerMemberByUserId(userId, ozId);
+
+    return prisma.$transaction(async tx => {
+        const rental = await tx.rental.findFirst({
+            where: {
+                id: rentalId,
+                equipment: { organizationId: ozId },
+            },
+        });
+
+        if (!rental) throw new Error("RENTAL_NOT_FOUND");
+        if (rental.status !== "REQUESTED") throw new Error("RENTAL_ALREADY_PROCESSED");
+
+        if (input.status === "REJECTED") {
+            const equipment = await tx.equipment.findUnique({
+                where: { id: rental.equipmentId },
+            });
+
+            if (equipment) {
+                await tx.equipment.update({
+                    where: { id: equipment.id },
+                    data: { availableQuantity: equipment.availableQuantity + rental.quantity },
+                });
+            }
+        }
+
+        return tx.rental.update({
+            where: { id: rentalId },
+            data: {
+                status: input.status,
+                approvedBy: input.status === "BORROWED" ? manager.id : null,
+                approvedAt: input.status === "BORROWED" ? new Date() : null,
+                rejectedReason:
+                    input.status === "REJECTED" ? (input.rejectedReason ?? "").trim() : null,
+            },
+        });
     });
 };
 
@@ -200,7 +335,10 @@ const deleteRental = async (userId: number, rentalId: number) => {
 
 export default {
     getMyRentalList,
+    getMyRentalById,
     getOrgRentalList,
+    getOrgRentalById,
+    processRental,
     createRental,
     returnRental,
     updateRental,
