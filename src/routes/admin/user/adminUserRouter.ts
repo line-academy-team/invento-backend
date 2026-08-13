@@ -9,7 +9,6 @@ const router = Router();
 
 router.post("/login", validate(loginSchema), adminUserController.login);
 
-// 인증 및 어드민 권한 필수 적용
 router.use(authenticate, requiredAdmin);
 
 router.get("/", adminUserController.getUsers);

@@ -9,6 +9,27 @@ import { getMemberByUserId } from "./rentalService.ts";
 const createReport = async (userId: number, input: UserCreateReportInputType) => {
     const member = await getMemberByUserId(userId);
 
+    if (input.type === "BROKEN" && input.equipmentId !== undefined) {
+        const borrowedRental = await prisma.rental.findFirst({
+            where: {
+                memberId: member.id,
+                equipmentId: input.equipmentId,
+                status: "BORROWED",
+            },
+        });
+        if (!borrowedRental) throw new Error("BORROWED_RENTAL_REQUIRED");
+
+        const pendingReport = await prisma.report.findFirst({
+            where: {
+                reporterId: member.id,
+                equipmentId: input.equipmentId,
+                type: "BROKEN",
+                status: "PENDING",
+            },
+        });
+        if (pendingReport) throw new Error("PENDING_REPORT_ALREADY_EXISTS");
+    }
+
     return prisma.report.create({
         data: {
             reporterId: member.id,
@@ -59,6 +80,8 @@ const getReportList = async (userId: number, ozId?: number) => {
             title: true,
             content: true,
             status: true,
+            processedAt: true,
+            result: true,
             createdAt: true,
             reporter: {
                 select: {

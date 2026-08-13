@@ -18,7 +18,6 @@ const getEquipmentList = async (req: AuthRequest, res: Response) => {
         );
         res.status(200).json({ message: "장비 목록을 조회했습니다.", data: equipments });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "장비 목록 조회 중 서버 에러가 발생했습니다." });
     }
 };
@@ -60,7 +59,6 @@ const createEquipment = async (req: AuthRequest, res: Response) => {
         const newEquipment = await equipmentService.createEquipment(req.user.id, req.body);
         res.status(201).json({ message: "장비가 등록되었습니다.", data: newEquipment });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "CANNOT_CREATE_EQUIPMENT_MEMBER") {
             res.status(403).json({ message: "일반 사용자는 장비 등록 권한이 없습니다." });
         }
@@ -93,7 +91,6 @@ const updateEquipment = async (req: AuthRequest<{ equipmentId: string }>, res: R
             data: updatedEquipment,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "EQUIPMENT_NOT_FOUND") {
                 res.status(404).json({ message: "장비 내역을 찾을 수 없거나 권한이 없습니다." });
@@ -123,7 +120,6 @@ const deleteEquipment = async (req: AuthRequest<{ equipmentId: string }>, res: R
         await equipmentService.deleteEquipment(req.user.id, equipmentId);
         res.status(200).json({ message: "장비 삭제가 완료되었습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "EQUIPMENT_NOT_FOUND") {
                 res.status(404).json({ message: "장비 내역을 찾을 수 없거나 권한이 없습니다," });

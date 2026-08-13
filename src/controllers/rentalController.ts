@@ -22,7 +22,6 @@ const getMyRentalList = async (req: AuthRequest, res: Response) => {
             data: rental,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "MEMBER_NOT_FOUND") {
             res.status(403).json({ message: "소속된 단체 멤버 정보를 찾을 수 없습니다." });
             return;
@@ -49,7 +48,6 @@ const getMyRentalById = async (req: AuthRequest<{ rentalId: string }>, res: Resp
         const rental = await rentalService.getMyRentalById(req.user.id, rentalId);
         res.status(200).json({ message: "대여 상세 내역을 불러왔습니다.", data: rental });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "RENTAL_NOT_FOUND") {
             res.status(404).json({ message: "대여 내역을 찾을 수 없습니다." });
             return;
@@ -80,7 +78,6 @@ const getOrgRentalList = async (req: AuthRequest<{ ozId: string }>, res: Respons
             data: rental,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "MANAGER_PERMISSION_REQUIRED") {
             res.status(403).json({ message: "대여 관리 권한이 없습니다." });
             return;
@@ -111,7 +108,6 @@ const getOrgRentalById = async (
         const rental = await rentalService.getOrgRentalById(req.user.id, ozId, rentalId);
         res.status(200).json({ message: "대여 요청 상세를 불러왔습니다.", data: rental });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "MANAGER_PERMISSION_REQUIRED") {
                 res.status(403).json({ message: "대여 관리 권한이 없습니다." });
@@ -153,7 +149,6 @@ const processRental = async (
             data: rental,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "MANAGER_PERMISSION_REQUIRED") {
                 res.status(403).json({ message: "대여 관리 권한이 없습니다." });
@@ -187,7 +182,15 @@ const createRentalRequest = async (req: AuthRequest, res: Response) => {
             data: newRental,
         });
     } catch (error) {
-        console.log(error);
+        if (
+            error instanceof Error &&
+            error.message === "INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE"
+        ) {
+            res.status(400).json({
+                message: "소모품이 아닌 장비는 한 번에 1개만 대여할 수 있습니다.",
+            });
+            return;
+        }
         res.status(500).json({ message: "대여 신청 중 서버 에러가 발생하였습니다." });
     }
 };
@@ -209,7 +212,6 @@ const returnRental = async (req: AuthRequest<{ rentalId: string }>, res: Respons
 
         res.status(200).json({ message: "반납이 완료되었습니다." });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "비품 반남 중 서버 에러가 발생하였습니다." });
     }
 };
@@ -235,7 +237,6 @@ const updateRental = async (req: AuthRequest<{ rentalId: string }>, res: Respons
             data: updatedRental,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "RENTAL_NOT_FOUND") {
                 res.status(404).json({ message: "대여 내역을 찾을 수 없거나 권한이 없습니다." });
@@ -243,6 +244,12 @@ const updateRental = async (req: AuthRequest<{ rentalId: string }>, res: Respons
             }
             if (error.message === "CANNOT_UPDATE_APPROVED_RENTAL") {
                 res.status(400).json({ message: "승인 대기 중인 대여 신청만 수정할 수 있습니다." });
+                return;
+            }
+            if (error.message === "INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE") {
+                res.status(400).json({
+                    message: "소모품이 아닌 장비는 한 번에 1개만 대여할 수 있습니다.",
+                });
                 return;
             }
         }
@@ -266,7 +273,6 @@ const deleteRental = async (req: AuthRequest<{ rentalId: string }>, res: Respons
         await rentalService.deleteRental(req.user.id, rentalId);
         res.status(200).json({ message: "대여 신청 취소가 완료되었습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "RENTAL_NOT_FOUND") {
                 res.status(404).json({ message: "대여 내역을 찾을 수 없거나 권한이 없습니다." });

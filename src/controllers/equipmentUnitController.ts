@@ -16,7 +16,6 @@ const getUnitByEquipmentId = async (req: AuthRequest<{ equipmentId: string }>, r
         const units = await equipmentUnitService.getUnitsByEquipmentId(req.user.id, equipmentId);
         res.status(200).json({ message: "장비 유닛 목록을 조회했습니다.", data: units });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "UNIT_NOT_FOUND") {
                 res.status(404).json({ message: "장비 유닛을 찾을 수 없습니다." });
@@ -38,7 +37,6 @@ const createUnit = async (req: AuthRequest, res: Response) => {
         const newUnit = await equipmentUnitService.createEquipmentUnit(req.user.id, req.body);
         res.status(201).json({ message: "장비 유닛이 등록되었습니다.", data: newUnit });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "CANNOT_CREATE_EQUIPMENTUNIT_MEMBER") {
             res.status(403).json({ message: "일반 사용자는 장비 유닛 등록 권한이 없습니다." });
         }
@@ -64,7 +62,6 @@ const updateUnit = async (req: AuthRequest<{ unitId: string }>, res: Response) =
         );
         res.status(200).json({ message: "장비 유닛 정보가 수정되었습니다.", data: updatedUnit });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "UNIT_NOT_FOUND") {
                 res.status(404).json({ message: "장비 유닛을 찾을 수 없습니다." });
@@ -92,7 +89,6 @@ const deleteUnit = async (req: AuthRequest<{ unitId: string }>, res: Response) =
         await equipmentUnitService.deleteEquipmentUnit(req.user.id, unitId);
         res.status(200).json({ message: "장비 유닛이 삭제되었습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "UNIT_NOT_FOUND") {
                 res.status(404).json({ message: "장비 유닛을 찾을 수 없습니다." });

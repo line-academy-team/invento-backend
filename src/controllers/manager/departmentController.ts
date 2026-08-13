@@ -19,7 +19,6 @@ const getOrgMemberList = async (req: AuthRequest, res: Response) => {
             data: members,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_APPROVAL") {
                 res.status(403).json({ message: "해당 정보를 조회할 권한이 없습니다." });
@@ -51,7 +50,6 @@ const getDepartmentById = async (req: AuthRequest<{ departmentId: string }>, res
             data: department,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_APPROVAL") {
                 res.status(403).json({ message: "해당 정보를 조회할 권한이 없습니다." });
@@ -83,7 +81,6 @@ const transferDepartment = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ message: "성공적으로 부서 이동이 완료되었습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_APPROVAL") {
                 res.status(403).json({ message: "부서 이동을 처리할 권한이 없습니다." });

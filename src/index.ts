@@ -36,4 +36,4 @@ app.use("/owner", onwerRouter);
 
 app.use("/admin", adminRouter);
 
-app.listen(PORT, () => console.log(`${PORT}번 포트에서 서버 실행.`));
+app.listen(PORT);

@@ -62,7 +62,6 @@ const getOrganizationById = async (req: AuthRequest<{ id: string }>, res: Respon
                 return;
             }
         }
-        console.log(error);
         res.status(500).json({ message: "조직 정보 불러오기 중 서버 에러가 발생했습니다." });
     }
 };
@@ -83,7 +82,6 @@ const createOrganization = async (req: AuthRequest, res: Response) => {
             data: newOrg,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "ALREADY_CREATED_ORGANIZATION") {
             res.status(409).json({
                 message:
@@ -116,7 +114,6 @@ const updateOrganization = async (req: AuthRequest<{ id: string }>, res: Respons
             data: newOrg,
         });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "단체 수정 중 서버 에러가 발생했습니다." });
     }
 };
@@ -131,7 +128,6 @@ const deleteOrganization = async (req: AuthRequest<{ id: string }>, res: Respons
             message: "조직이 성공적으로 삭제되었습니다.",
         });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "조직 삭제 중 서버 에러가 발생했습니다." });
     }
 };
@@ -163,7 +159,6 @@ const joinOrganization = async (req: AuthRequest<{ id: string }>, res: Response)
                 return;
             }
         }
-        console.log(error);
         res.status(500).json({ message: "단체 가입 신청 중 서버 에러가 발생했습니다." });
     }
 };

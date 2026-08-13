@@ -20,7 +20,6 @@ const getDepartmentList = async (req: AuthRequest, res: Response) => {
             data: departments,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_APPROVAL") {
                 res.status(403).json({ message: "해당 정보를 조회할 권한이 없습니다." });
@@ -46,7 +45,6 @@ const createDepartment = async (req: AuthRequest, res: Response) => {
             data: department,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "FORBIDDEN_OWNER_ONLY") {
             res.status(403).json({ message: "대표자(OWNER)만 부서를 생성할 수 있습니다." });
             return;
@@ -80,7 +78,6 @@ const updateDepartment = async (req: AuthRequest<{ departmentId: string }>, res:
             data: updatedDepartment,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_OWNER_ONLY") {
                 res.status(403).json({ message: "대표자(OWNER)만 부서를 수정할 수 있습니다." });
@@ -108,7 +105,6 @@ const deleteDepartment = async (req: AuthRequest<{ departmentId: string }>, res:
 
         res.status(200).json({ message: "부서 삭제를 완료했습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_OWNER_ONLY") {
                 res.status(403).json({ message: "대표자(OWNER)만 부서를 삭제할 수 있습니다." });
@@ -140,7 +136,6 @@ const assignDepartmentManager = async (
 
         res.status(200).json({ message: "관리자 임명이 완료되었습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_OWNER_ONLY") {
                 res.status(403).json({ message: "대표자(OWNER)만 관리자를 임명할 수 있습니다." });

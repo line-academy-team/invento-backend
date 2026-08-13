@@ -23,7 +23,18 @@ const createStockRequest = async (req: AuthRequest, res: Response) => {
             data: stock,
         });
     } catch (error) {
-        console.log(error);
+        if (error instanceof Error) {
+            if (error.message === "EQUIPMENT_NOT_FOUND") {
+                res.status(404).json({ message: "장비를 찾을 수 없습니다." });
+                return;
+            }
+            if (error.message === "INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE") {
+                res.status(400).json({
+                    message: "소모품이 아닌 장비는 한 번에 1개만 요청할 수 있습니다.",
+                });
+                return;
+            }
+        }
         res.status(500).json({
             message: "재고 수량 요청 중 서버 에러가 발생했습니다.",
         });
@@ -52,7 +63,6 @@ const getStockList = async (req: AuthRequest, res: Response) => {
             data: stock,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "MEMBER_NOT_FOUND") {
             res.status(403).json({ message: "소속된 단체 멤버 정보를 찾을 수 없습니다." });
             return;
@@ -84,7 +94,6 @@ const updateStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
             data: updatedStock,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "STOCK_NOT_FOUND") {
                 res.status(404).json({
@@ -94,6 +103,12 @@ const updateStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
             }
             if (error.message === "CANNOT_UPDATE_APPROVED_STOCK") {
                 res.status(400).json({ message: "승인 대기 중인 요청만 수정할 수 있습니다." });
+                return;
+            }
+            if (error.message === "INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE") {
+                res.status(400).json({
+                    message: "소모품이 아닌 장비는 한 번에 1개만 요청할 수 있습니다.",
+                });
                 return;
             }
         }
@@ -117,7 +132,6 @@ const deleteStockRequest = async (req: AuthRequest<{ stockId: string }>, res: Re
         await stockService.deleteStockRequest(req.user.id, stockId);
         res.status(200).json({ message: "재고 요청 취소가 완료되었습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "STOCK_NOT_FOUND") {
                 res.status(404).json({

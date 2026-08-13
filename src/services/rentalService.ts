@@ -223,6 +223,9 @@ const createRental = async (userId: number, input: UserRequestRentalInputType) =
         });
 
         if (!equipment) throw new Error("EQUIPMENT_NOT_FOUND");
+        if (equipment.type !== "CONSUMABLE" && (input.quantity ?? 1) !== 1) {
+            throw new Error("INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE");
+        }
         if (equipment.availableQuantity < (input.quantity ?? 1)) {
             throw new Error("AVAILABLE_QUANTITY_NOT_ENOUGH");
         }
@@ -273,7 +276,7 @@ const returnRental = async (userId: number, rentalId: number) => {
 
         return tx.rental.update({
             where: { id: rentalId },
-            data: { status: "RETURNED", returnedAt: new Date() }, // 스키마에 맞춘 상태값
+            data: { status: "RETURNED", returnedAt: new Date() },
         });
     });
 };
@@ -291,6 +294,14 @@ const updateRental = async (userId: number, rentalId: number, input: UserUpdateR
     if (!rental) throw new Error("RENTAL_NOT_FOUND");
 
     if (rental.status !== "REQUESTED") throw new Error("CANNOT_UPDATE_APPROVED_RENTAL");
+
+    const equipment = await prisma.equipment.findUnique({
+        where: { id: rental.equipmentId },
+        select: { type: true },
+    });
+    if (equipment?.type !== "CONSUMABLE" && input.quantity !== undefined && input.quantity !== 1) {
+        throw new Error("INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE");
+    }
 
     return prisma.rental.update({
         where: { id: rentalId },

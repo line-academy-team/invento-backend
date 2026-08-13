@@ -8,7 +8,6 @@ export const validate = (schema: ZodType) => {
         }
         const result = await schema.safeParseAsync(req.body);
         if (!result.success) {
-            console.log(result.error.issues);
             const errorMessage = result.error.issues.map(issue => ({
                 field: issue.path.join("."),
                 message: issue.message,

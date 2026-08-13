@@ -7,6 +7,17 @@ import prisma from "../config/prisma.ts";
 
 const createStock = async (userId: number, input: UserRequestStockInputType) => {
     const member = await getMemberByUserId(userId);
+    const equipment = await prisma.equipment.findUnique({
+        where: { id: input.equipmentId },
+        select: { type: true, organizationId: true },
+    });
+
+    if (!equipment || equipment.organizationId !== member.organizationId) {
+        throw new Error("EQUIPMENT_NOT_FOUND");
+    }
+    if (equipment.type !== "CONSUMABLE" && input.quantity !== 1) {
+        throw new Error("INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE");
+    }
 
     return prisma.equipmentStockRequest.create({
         data: {
@@ -87,6 +98,14 @@ const updateStockRequest = async (
 
     if (stock.status !== "PENDING") {
         throw new Error("CANNOT_UPDATE_APPROVED_STOCK");
+    }
+
+    const equipment = await prisma.equipment.findUnique({
+        where: { id: stock.equipmentId },
+        select: { type: true },
+    });
+    if (equipment?.type !== "CONSUMABLE" && input.quantity !== undefined && input.quantity !== 1) {
+        throw new Error("INDIVIDUAL_EQUIPMENT_QUANTITY_MUST_BE_ONE");
     }
 
     return prisma.equipmentStockRequest.update({

@@ -7,23 +7,23 @@ import { getMemberByUserId } from "./rentalService.ts";
 
 const getUnitsByEquipmentId = async (userId: number, equipmentId: number) => {
     const member = await getMemberByUserId(userId);
-    
-    let targetDepartmentId = 
+
+    let targetDepartmentId =
         member.role === "OWNER" ? undefined : (member.departmentId ?? undefined);
-    
+
     const unit = await prisma.equipmentUnit.findMany({
         where: {
             equipmentId,
         },
         orderBy: { createdAt: "desc" },
     });
-    
+
     const equipment = await prisma.equipment.findUnique({
         where: {
             id: equipmentId,
         },
     });
-    
+
     if (!equipment) {
         throw new Error("UNIT_NOT_FOUND");
     }

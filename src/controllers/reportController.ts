@@ -22,7 +22,16 @@ const createReportRequest = async (req: AuthRequest, res: Response) => {
             data: report,
         });
     } catch (error) {
-        console.log(error);
+        if (error instanceof Error) {
+            if (error.message === "BORROWED_RENTAL_REQUIRED") {
+                res.status(400).json({ message: "대여중인 장비만 파손 신고할 수 있습니다." });
+                return;
+            }
+            if (error.message === "PENDING_REPORT_ALREADY_EXISTS") {
+                res.status(400).json({ message: "이미 처리 대기 중인 파손 신고가 있습니다." });
+                return;
+            }
+        }
         res.status(500).json({
             message: "보고 전송 중 서버 에러가 발생했습니다.",
         });
@@ -49,7 +58,6 @@ const getReportList = async (req: AuthRequest, res: Response) => {
             data: reports,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "MEMBER_NOT_FOUND") {
                 res.status(403).json({ message: "소속된 단체 멤버 정보를 찾을 수 없습니다." });
@@ -86,7 +94,6 @@ const getReportById = async (req: AuthRequest<{ reportId: string }>, res: Respon
             data: report,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "REPORT_NOT_FOUND") {
             res.status(404).json({ message: "보고 내용을 찾을 수 없습니다." });
             return;
@@ -112,7 +119,6 @@ const processReport = async (req: AuthRequest<{ reportId: string }>, res: Respon
         const report = await reportService.processReport(req.user.id, reportId, input);
         res.status(200).json({ message: "보고 처리가 완료되었습니다.", data: report });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "MANAGER_PERMISSION_REQUIRED") {
                 res.status(403).json({ message: "보고 관리 권한이 없습니다." });
@@ -152,7 +158,6 @@ const updateReport = async (req: AuthRequest<{ reportId: string }>, res: Respons
             data: updatedReport,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "REPORT_NOT_FOUND") {
                 res.status(400).json({
@@ -185,7 +190,6 @@ const deleteReport = async (req: AuthRequest<{ reportId: string }>, res: Respons
         await reportService.deleteReport(req.user.id, reportId);
         res.status(200).json({ message: "보고 취소가 완료되었습니다." });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "REPORT_NOT_FOUND") {
                 res.status(404).json({

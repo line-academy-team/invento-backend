@@ -20,7 +20,6 @@ const getJoinRequestList = async (req: AuthRequest, res: Response) => {
             data: joinRequest,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_APPROVAL") {
                 res.status(403).json({ message: "해당 요청을 처리할 권한이 없습니다." });
@@ -50,7 +49,6 @@ const getJoinRequestById = async (req: AuthRequest<{ requesterId: string }>, res
             data: joinRequest,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error) {
             if (error.message === "FORBIDDEN_APPROVAL") {
                 res.status(403).json({ message: "해당 요청을 처리할 권한이 없습니다." });
@@ -81,8 +79,6 @@ const processJoinOrganization = async (req: AuthRequest, res: Response) => {
             message: `가입 요청 ${statusMessage} 처리가 완료되었습니다.`,
         });
     } catch (error) {
-        console.log(error);
-
         if (error instanceof z.ZodError) {
             res.status(400).json({
                 message: error.issues[0]?.message || "잘못된 데이터 요청입니다.",

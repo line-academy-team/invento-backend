@@ -6,7 +6,6 @@ import adminOrganizationController from "../../../controllers/admin/adminOrganiz
 
 const router = Router();
 
-// 인증 및 어드민 권한 필수 적용
 router.use(authenticate, requiredAdmin);
 
 router.get("/", adminOrganizationController.getOrganizationList);

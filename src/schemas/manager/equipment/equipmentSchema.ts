@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createEquipmentSchema = z.object({
     organizationId: z.number().int().optional(),
-    departmentId: z.number().int().nullable().optional(), // 💡 nullable 추가
+    departmentId: z.number().int().nullable().optional(),
     name: z.string().min(1, "장비명을 입력해주세요.").max(100),
     category: z.string().max(50).nullable().optional(),
     description: z.string().nullable().optional(),

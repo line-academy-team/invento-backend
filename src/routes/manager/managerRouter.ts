@@ -9,6 +9,4 @@ router.use("/department", departmentRouter);
 router.use("/join", joinRequestRouter);
 router.use("/dashboard", managerDashboardRouter);
 
-router.use("/dashboard", managerDashboardRouter);
-
 export default router;

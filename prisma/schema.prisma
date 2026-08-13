@@ -1,7 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
@@ -13,9 +10,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-// ==========================================
-// Enums
-// ==========================================
 
 enum UserRole {
   USER
@@ -76,23 +70,19 @@ enum ReportStatus {
   COMPLETED
 }
 
-// ==========================================
-// Models
-// ==========================================
 
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique @db.VarChar(100)
   passwordHash String   @map("password_hash") @db.VarChar(255)
   name         String   @db.VarChar(50)
-  imageUrl     String?  @map("image_url") @db.VarChar(255) // 이미지 필드 추가
+  imageUrl     String?  @map("image_url") @db.VarChar(255)
   role         UserRole @default(USER)
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime?
 
-  // Relations
   createdOrganizations Organization[] @relation("OrganizationCreatedBy")
   member               Member?
 
@@ -113,7 +103,6 @@ model Organization {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime?
 
-  // Relations
   departments Department[]
   members     Member[]
   equipments  Equipment[]
@@ -130,7 +119,6 @@ model Department {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
   members      Member[]
   equipments   Equipment[]
@@ -156,7 +144,6 @@ model Member {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
   user         User         @relation(fields: [userId], references: [id])
   department   Department?  @relation(fields: [departmentId], references: [id])
@@ -195,7 +182,6 @@ model Equipment {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
   department   Department?  @relation(fields: [departmentId], references: [id])
   creator      Member       @relation("EquipmentCreatedBy", fields: [createdBy], references: [id])
@@ -220,7 +206,6 @@ model EquipmentUnit {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations
   equipment Equipment @relation(fields: [equipmentId], references: [id])
   rentals   Rental[]
 
@@ -247,7 +232,6 @@ model Rental {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations
   equipment     Equipment      @relation(fields: [equipmentId], references: [id])
   equipmentUnit EquipmentUnit? @relation(fields: [equipmentUnitId], references: [id])
   member        Member         @relation("RentalMember", fields: [memberId], references: [id])
@@ -275,7 +259,6 @@ model EquipmentStockRequest {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations
   equipment Equipment @relation(fields: [equipmentId], references: [id])
   requester Member    @relation("StockRequester", fields: [requesterId], references: [id])
   processor Member?   @relation("StockProcessedBy", fields: [processedBy], references: [id])
@@ -302,7 +285,6 @@ model Report {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations
   equipment Equipment? @relation(fields: [equipmentId], references: [id])
   reporter  Member     @relation("ReportReporter", fields: [reporterId], references: [id])
   processor Member?    @relation("ReportProcessedBy", fields: [processedBy], references: [id])

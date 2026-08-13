@@ -5,7 +5,6 @@ import passwordUtil from "../utils/password/passwordUtil.ts";
 import jwtUtil from "../utils/jwt/jwtUtil.ts";
 import type { UpdateUserInputType } from "../schemas/user/updateUserSchema.ts";
 
-// 회원가입 로직
 const createUser = async (data: { email: string; passwordHash: string; name: string }) => {
     try {
         return await prisma.user.create({
@@ -35,7 +34,6 @@ const createUser = async (data: { email: string; passwordHash: string; name: str
     }
 };
 
-// 미들웨어용 유저 조회 로직 (단순 정보 조회)
 const getUserById = async (id: number) => {
     const user = await prisma.user.findUnique({
         where: { id },
@@ -46,12 +44,10 @@ const getUserById = async (id: number) => {
     return user;
 };
 
-// [추가됨] 프론트엔드 규격에 맞게 유저와 멤버(조직, 부서 포함) 정보를 함께 조회
 const getUserWithMemberInfo = async (id: number) => {
     const user = await prisma.user.findUnique({
         where: { id },
         include: {
-            // 스키마에 정의된 1:1 관계 모델 'member'
             member: {
                 include: {
                     organization: true,
@@ -67,7 +63,6 @@ const getUserWithMemberInfo = async (id: number) => {
 
     const { passwordHash, deletedAt, member, ...safeUserInfo } = user;
 
-    // 프론트엔드의 MemberInfo 인터페이스에 맞게 데이터 매핑
     const memberInfo = member
         ? {
               id: member.id,
@@ -87,7 +82,6 @@ const getUserWithMemberInfo = async (id: number) => {
     };
 };
 
-// 로그인 로직 (토큰 및 회원+멤버 정보 반환)
 const login = async (data: LoginInputType) => {
     const user = await prisma.user.findUnique({
         where: { email: data.email },
@@ -105,7 +99,6 @@ const login = async (data: LoginInputType) => {
         throw new Error("INVALID_CREDENTIALS");
     }
 
-    // 비밀번호 검증
     const isValid = await passwordUtil.verifyPassword(data.password, user.passwordHash);
     if (!isValid) {
         throw new Error("INVALID_CREDENTIALS");
@@ -134,7 +127,6 @@ const login = async (data: LoginInputType) => {
     };
 };
 
-// 유저 정보 수정 로직
 const updateUser = async (userId: number, input: UpdateUserInputType) => {
     const existUser = await prisma.user.findUnique({
         where: { id: userId },
@@ -148,21 +140,18 @@ const updateUser = async (userId: number, input: UpdateUserInputType) => {
         where: { id: userId },
         data: {
             ...(input.name !== undefined && { name: input.name }),
-            // 👇 입력값에 imageUrl이 있으면 DB 업데이트 항목에 추가합니다.
             ...(input.imageUrl !== undefined && { imageUrl: input.imageUrl }),
         },
         select: {
             id: true,
             email: true,
             name: true,
-            // 👇 수정된 유저 정보 반환 시 imageUrl도 함께 반환되도록 추가합니다.
             imageUrl: true,
             updatedAt: true,
         },
     });
 };
 
-// 비밀번호 수정 로직
 const updatePassword = async (userId: number, currentPw: string, newPw: string) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -187,7 +176,6 @@ const updatePassword = async (userId: number, currentPw: string, newPw: string) 
     });
 };
 
-// 회원 탈퇴 로직
 const withdrawUser = async (userId: number, password: string) => {
     const existUser = await prisma.user.findUnique({
         where: { id: userId },

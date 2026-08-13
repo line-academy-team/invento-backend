@@ -10,7 +10,6 @@ const getOrganizationList = async (req: Request, res: Response) => {
             data: organizations,
         });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: "조직 목록 조회 중 오류가 발생했습니다." });
     }
 };
@@ -29,7 +28,6 @@ const getOrganizationById = async (req: Request<{ id: string }>, res: Response) 
             data: organization,
         });
     } catch (error) {
-        console.log(error);
         if (error instanceof Error && error.message === "ORGANIZATION_NOT_FOUND") {
             res.status(404).json({ message: "조직을 찾을 수 없습니다." });
         }

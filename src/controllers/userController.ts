@@ -17,12 +17,11 @@ const getMe = async (req: AuthRequest, res: Response) => {
     }
 
     try {
-        // 인증 미들웨어를 통과한 유저의 전체 정보(소속 조직, 부서 포함)를 조회합니다.
         const authData = await userService.getUserWithMemberInfo(req.user.id);
 
         res.status(200).json({
             message: "사용자 정보 확인이 완료되었습니다.",
-            data: authData, // { user, memberInfo } 형태로 반환됩니다.
+            data: authData,
         });
     } catch (error) {
         console.error(error);
@@ -62,7 +61,6 @@ const createUser = async (req: Request, res: Response) => {
 const login = async (req: Request, res: Response) => {
     try {
         const loginData: LoginInputType = req.body;
-        // userService.login() 의 리턴값은 이제 { user, memberInfo, token } 형태입니다.
         const result = await userService.login(loginData);
 
         res.status(200).json({

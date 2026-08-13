@@ -1,7 +1,18 @@
 import prisma from "../../config/prisma.ts";
 
-const getDashboardData = async (organizationId: number) => {
-    // 다중 쿼리를 병렬로 처리하여 응답 속도 최적화
+const getDashboardData = async (userId: number) => {
+    const member = await prisma.member.findFirst({
+        where: {
+            userId,
+            status: "APPROVED",
+            role: { in: ["OWNER", "MANAGER"] },
+        },
+    });
+
+    if (!member) throw new Error("MANAGER_PERMISSION_REQUIRED");
+
+    const organizationId = member.organizationId;
+
     const [totalEquipmentAgg, borrowedCount, requestCount, brokenReportCount, recentRentals] =
         await Promise.all([
             prisma.equipment.aggregate({
