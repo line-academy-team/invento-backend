@@ -3,9 +3,6 @@ import prisma from "../../config/prisma.ts";
 
 const getOrganizationList = async () => {
     return prisma.organization.findMany({
-        where: {
-            deletedAt: null,
-        },
         select: {
             id: true,
             name: true,
